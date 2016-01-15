@@ -9,6 +9,8 @@
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -16,7 +18,7 @@
 					<folderInfo id="com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.943611166." name="/" resourcePath="">
 						<toolChain id="com.intel.iotdevkit.ide.toolchain.gnu.cross.exe.debug.1837178225" name="IoT Cross GCC" superClass="com.intel.iotdevkit.ide.toolchain.gnu.cross.exe.debug">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.236068870" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
-							<builder buildPath="${workspace_loc:/GsmIntegration}/Debug" id="com.intel.iotdevkit.builder.800191328" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="IoT internal builder" superClass="com.intel.iotdevkit.builder"/>
+							<builder buildPath="${workspace_loc:/SGMeteo}/Debug" id="cdt.managedbuild.builder.gnu.cross.1350588449" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="com.intel.iotdevkit.ide.tool.gnu.cross.c.compiler.1919636681" name="Cross GCC Compiler" superClass="com.intel.iotdevkit.ide.tool.gnu.cross.c.compiler">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.696912270" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.691139159" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
@@ -53,6 +55,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="inc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
@@ -114,14 +117,25 @@
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
 		<project id="GsmIntegration.com.intel.iotdevkit.target.gnu.cross.exe.414425264" name="Executable" projectType="com.intel.iotdevkit.target.gnu.cross.exe"/>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/SGMeteo"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/SGMeteo"/>
+		</configuration>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="com.intel.iotdevkit.ide.config.cross.exe.release.1327287593;com.intel.iotdevkit.ide.config.cross.exe.release.1327287593.;com.intel.iotdevkit.ide.tool.gnu.cross.c.compiler.852467194;cdt.managedbuild.tool.gnu.c.compiler.input.747052503">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.943611166;com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.943611166.;com.intel.iotdevkit.ide.tool.gnu.cross.c.compiler.1919636681;cdt.managedbuild.tool.gnu.c.compiler.input.1538795743">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.943611166;com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.943611166.;com.intel.iotdevkit.ide.tool.gnu.cross.cpp.compiler.1078664868;cdt.managedbuild.tool.gnu.cpp.compiler.input.139096028">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="com.intel.iotdevkit.ide.config.cross.exe.release.1327287593;com.intel.iotdevkit.ide.config.cross.exe.release.1327287593.;com.intel.iotdevkit.ide.tool.gnu.cross.c.compiler.852467194;cdt.managedbuild.tool.gnu.c.compiler.input.747052503">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>
