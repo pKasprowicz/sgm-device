@@ -1,4 +1,5 @@
 #include <iostream>
+#include <i2c.hpp>
 using namespace std;
 
 int main() {
