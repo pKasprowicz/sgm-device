@@ -17,7 +17,7 @@ public:
 private:
 
 protected:
-    virtual ISensor() = 0;
+    ISensor();
 };
 
 
