@@ -1,20 +1,34 @@
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <systemd/sd-daemon.h>
-  #include <systemd/sd-journal.h>
-  #include <signal.h>
-  #include <sys/socket.h>
-  #include <sys/un.h>
-  #include<time.h>
+#ifdef __cplusplus
+extern "C"{
+#endif
 
-  void sig_handler(int sig);
+#include <stdio.h>
+#include <stdlib.h>
+#include <systemd/sd-daemon.h>
+#include <systemd/sd-journal.h>
+#include <signal.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include<time.h>
+#include<pthread.h>
 
-  int main() {
-          signal(SIGHUP, sig_handler);
-          signal(SIGTERM, sig_handler);
+#ifdef __cplusplus
+}
+#endif
 
+#ifdef __cplusplus
+extern "C"{
+#endif
 
-          sd_journal_print(LOG_INFO, "Daemon started\n");
+static pthread_t thread1, thread2;
+
+#ifdef __cplusplus
+}
+#endif
+
+extern "C" void * receive_thread(void * args)
+{
+  sd_journal_print(LOG_INFO, "Daemon started\n");
           unsigned int socketFD = 0U;
 
           {
@@ -33,7 +47,7 @@
                     if(socketFD == (SD_LISTEN_FDS_START + socketsCount - 1U))
                     {
                             sd_journal_print(LOG_ERR, "No socket found\n");
-                            return -1;
+                            return NULL;
                     }
             }
 
@@ -49,7 +63,7 @@
                   rxSize = 0U;
                   sd_journal_print(LOG_INFO, "Starting listening on socket %d ...", socketFD);
                   listen(socketFD, 3);
-                  socketDescriptor = accept(socketFD, &client, &sockaddr_len);
+                  socketDescriptor = accept(socketFD, reinterpret_cast<sockaddr *>(&client), &sockaddr_len);
                   if (socketDescriptor < 0U)
                   {
                           sd_journal_print(LOG_INFO, "Error during socket connection, restarting daemon\n");
@@ -69,23 +83,40 @@
 
           }
 
-          return -1U;
-  }
+          return NULL;
+}
 
-  void sig_handler(int sig) {
-          switch (sig) {
-          case SIGHUP:
-                  sd_journal_print(LOG_INFO, "Received SIGHUP\n");
-                  abort();
-                  break;
-          case SIGTERM:
-                  sd_journal_print(LOG_INFO, "Received SIGTERM\n");
-                  abort();
-                  break;
-          default:
-                  sd_journal_print(LOG_INFO, "wasn't expecting that!\n");
-                  abort();
-                  break;
-          }
-  }
+extern "C" void * processing_thread(void * args)
+{
+
+}
+
+extern "C" void sig_handler(int sig);
+
+int main() {
+
+        signal(SIGHUP, sig_handler);
+        signal(SIGTERM, sig_handler);
+        sd_journal_print(LOG_INFO, "SGMdatasink service started!");
+        pthread_create(&thread1, NULL, receive_thread, NULL);
+        pthread_join(thread1, NULL);
+
+}
+
+void sig_handler(int sig) {
+        switch (sig) {
+        case SIGHUP:
+                sd_journal_print(LOG_INFO, "Received SIGHUP\n");
+                abort();
+                break;
+        case SIGTERM:
+                sd_journal_print(LOG_INFO, "Received SIGTERM\n");
+                abort();
+                break;
+        default:
+                sd_journal_print(LOG_INFO, "wasn't expecting that!\n");
+                abort();
+                break;
+        }
+}
 
