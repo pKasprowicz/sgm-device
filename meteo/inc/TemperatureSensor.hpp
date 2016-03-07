@@ -23,7 +23,7 @@ public:
 
 
 private:
-	DeviceBme280 sensorDevice;
+//	DeviceBme280 sensorDevice;
 
 };
 

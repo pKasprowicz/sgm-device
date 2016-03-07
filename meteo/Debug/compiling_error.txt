@@ -1,0 +1,2 @@
+makefile: file not recognized: Plik został ucięty
+collect2: error: ld returned 1 exit status
