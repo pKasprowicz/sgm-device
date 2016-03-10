@@ -2,7 +2,7 @@
 Description=SGM Service's socket
 
 [Socket]
-ListenStream = /home/root/sgm/sgm.sckt
+ListenSequentialPacket = /home/root/sgm/sgm.sckt
 Accept       = no
 SocketMode   = 0666
 

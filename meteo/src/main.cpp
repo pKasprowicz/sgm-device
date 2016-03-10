@@ -13,7 +13,7 @@ int main() {
 	const char message[] = "srutu-tutu";
 
 	struct sockaddr_un remote;
-	int s = socket(AF_UNIX, SOCK_STREAM, 0);
+	int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
 	int len;
 
 	remote.sun_family = AF_UNIX;
