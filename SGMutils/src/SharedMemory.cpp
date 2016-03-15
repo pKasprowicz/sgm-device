@@ -15,6 +15,7 @@ extern "C"
 #include "Logger.h"
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <errno.h>
 }
@@ -53,7 +54,7 @@ SharedMemory::Result SharedMemory::init()
     switch(errno)
     {
     case EEXIST:
-      fileDescriptor = shm_open(resourceName, flags, O_CREAT | O_RDWR);
+      fileDescriptor = shm_open(resourceName, O_CREAT | O_RDWR, mode);
       isInitialized = true;
       break;
 
@@ -63,16 +64,32 @@ SharedMemory::Result SharedMemory::init()
     }
   }
 
-  truncate(resourceName, sizeof(SGMShared_t));
+  if (-1 == fileDescriptor)
+  {
+    SGM_LOG_ERROR("Error %d", errno);
+    return Result::INIT_ERROR;
+  }
 
-  sharedDataInstance.setData(
-      reinterpret_cast<SGMShared_t*>(mmap(NULL,
-                                    sizeof(SGMShared_t),
-                                    PROT_READ | PROT_WRITE,
-                                    MAP_SHARED,
-                                    fileDescriptor,
-                                    0))
-                            );
+  if (-1 == ftruncate(fileDescriptor, sizeof(SGMShared_t)))
+  {
+    SGM_LOG_ERROR("Truncate error %d", errno);
+    return Result::INIT_ERROR;
+  }
+
+  void * mappedMem = mmap(NULL,
+      sizeof(SGMShared_t),
+      PROT_READ | PROT_WRITE,
+      MAP_SHARED,
+      fileDescriptor,
+      0);
+
+  if (-1 == reinterpret_cast<int>(mappedMem))
+  {
+    SGM_LOG_ERROR("Mmap error %d", errno);
+    return Result::INIT_ERROR;
+  }
+
+  sharedDataInstance.setData(reinterpret_cast<SGMShared_t*>(mappedMem));
 
   if (!isInitialized)
   {
@@ -101,10 +118,46 @@ void SharedMemory::SharedData::initData()
   pthread_mutexattr_setpshared(&mutexAttributes, PTHREAD_PROCESS_SHARED);
 
   pthread_mutex_init(&sharedMemory->mutex, &mutexAttributes);
+
+  sharedMemory->isModemReady = false;
 }
 
 void SharedMemory::SharedData::setData(SGMShared_t * const pData)
 {
   sharedMemory = pData;
-  initData();
+}
+
+void SharedMemory::SharedData::startAccess()
+{
+  if (0U == pthread_mutex_lock(&sharedMemory->mutex)){
+    SGM_LOG_DEBUG("shared mem mutex locked");
+  }
+  else
+  {
+    SGM_LOG_DEBUG("mutex acquire error");
+    abort();
+  }
+}
+
+void SharedMemory::SharedData::endAccess()
+{
+
+  if (0U == pthread_mutex_unlock(&sharedMemory->mutex)){
+    SGM_LOG_DEBUG("shared mem mutex released");
+  }
+  else
+  {
+    SGM_LOG_DEBUG("mutex release error");
+    abort();
+  }
+}
+
+void SharedMemory::SharedData::setModemReady(const bool flag)
+{
+  sharedMemory->isModemReady = flag;
+}
+
+bool SharedMemory::SharedData::getModemReady()
+{
+  return sharedMemory->isModemReady;
 }

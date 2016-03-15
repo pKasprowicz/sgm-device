@@ -18,6 +18,7 @@ extern "C"
 struct SGMShared_t
 {
   pthread_mutex_t mutex;
+  bool isModemReady;
 };
 
 #ifdef __cplusplus

@@ -14,7 +14,7 @@ extern "C"
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-
+#include <pthread.h>
 }
 
 #include "SharedDataType.h"
@@ -32,6 +32,12 @@ public:
   public:
 
     friend class SharedMemory;
+
+    void startAccess();
+    void endAccess();
+
+    void setModemReady(const bool flag);
+    bool getModemReady();
 
   private:
     void setData(SGMShared_t * const pData);
