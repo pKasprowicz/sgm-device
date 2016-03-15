@@ -4,3 +4,14 @@ environment/project/com.intel.iotdevkit.ide.config.cross.exe.release.1573464341/
 environment/project/com.intel.iotdevkit.ide.config.cross.exe.release.1573464341/POKY_HOME/value=/home/pkasprow/./iotdk-ide-linux/devkit-x86/sysroots/i586-poky-linux
 environment/project/com.intel.iotdevkit.ide.config.cross.exe.release.1573464341/append=true
 environment/project/com.intel.iotdevkit.ide.config.cross.exe.release.1573464341/appendContributed=true
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/CWD/delimiter=\:
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/CWD/operation=replace
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/CWD/value=/home/pkasprow/git/sgmeteo/SGMutils/out
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/POKY_HOME/delimiter=\:
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/POKY_HOME/operation=replace
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/POKY_HOME/value=/home/pkasprow/./iotdk-ide-linux/devkit-x86/sysroots/i586-poky-linux
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/PWD/delimiter=\:
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/PWD/operation=replace
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/PWD/value=/home/pkasprow/git/sgmeteo/SGMutils/out
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/append=true
+environment/project/com.intel.iotdevkit.ide.config.gnu.cross.exe.debug.1770796971/appendContributed=true
