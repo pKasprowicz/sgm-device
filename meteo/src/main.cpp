@@ -1,14 +1,40 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>
 #include <i2c.hpp>
 #include <sys/socket.h>
 #include <sys/un.h>
+
+#include <SharedMemory.h>
+
 using namespace std;
 
 #define SOCKET_PATH "/home/root/sgm/sgm.sckt"
 
 int main() {
+
+  SharedMemory sharedMem;
+    sharedMem.init();
+
+    SharedMemory::SharedData & sData = sharedMem.getDataInstance();
+
+    while(1)
+    {
+      sData.startAccess();
+
+      if (sData.getModemReady())
+      {
+        cout << "Flag value true" << endl;
+      }
+      else
+      {
+        cout << "Flag value false" << endl;
+      }
+
+      sData.endAccess();
+      sleep(7);
+    }
 
 	const char message[] = "srutu-tutu";
 
@@ -27,6 +53,7 @@ int main() {
 
 	unsigned int txBytes = send(s, message, sizeof(message), 0U);
 	printf("Sent %d bytes\n", txBytes);
+
 
   return 0;
 }
