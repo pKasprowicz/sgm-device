@@ -16,6 +16,8 @@ extern "C"{
 }
 #endif
 
+#include <SharedMemory.h>
+
 #ifdef __cplusplus
 extern "C"{
 #endif
