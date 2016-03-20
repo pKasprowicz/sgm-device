@@ -7,17 +7,29 @@
 
 #include "SinkStateMachine.h"
 
-SinkStateMachine::SinkStateMachine()
-{	// TODO Auto-generated constructor stub
+SinkStateMachine::SinkStateMachine() :
+itsState(SinkState::INIT)
+{
 
 }
 
 SinkStateMachine::~SinkStateMachine()
 {
-	// TODO Auto-generated destructor stub
+
 }
 
 void SinkStateMachine::tick ()
 {
+  switch(itsState)
+  {
+  case SinkState::INIT:
+    break;
+
+  case SinkState::NO_CONNECTION:
+    break;
+
+  default:
+    break;
+  }
 
 }
