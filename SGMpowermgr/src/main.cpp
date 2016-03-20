@@ -13,39 +13,18 @@ extern"C"
 #include <SharedMemory.h>
 #include <Logger.h>
 
+//TODO turn off digital interface when process is killed
 
 int main() {
-  SharedMemory sharedMem;
 
-  SharedMemory::Result result = sharedMem.init();
+  SharedMemory SharedMem;
 
-  if (SharedMemory::Result::INIT_OK == result)
+  if (SharedMemory::Result::INIT_ERROR == SharedMem.init())
   {
-    SGM_LOG_INFO("Shared Memory initialized successfully!");
-  }
-  else
-  {
-    return -1;
+    SGM_LOG_ERROR("Error during shared memory initialization");
   }
 
-  SharedMemory::SharedData & sData = sharedMem.getDataInstance();
 
-  bool flag = false;
-
-  for (;;) {
-
-    flag = (flag ? false : true);
-
-    sData.startAccess();
-
-    SGM_LOG_INFO("Setting flag to %d", flag);
-
-    sData.setModemReady(flag);
-
-    sData.endAccess();
-
-    sleep(5);
-  }
 
   return 0;
 }

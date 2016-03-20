@@ -23,6 +23,7 @@
 								<option id="gnu.c.compiler.option.dialect.std.1469800282" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.c99" valueType="enumerated"/>
 								<option id="com.intel.iotdevkit.ide.gnu.c.option.include.paths.1058941136" name="Include paths (-I)" superClass="com.intel.iotdevkit.ide.gnu.c.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="${POKY_HOME}/usr/include/mraa"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SGMutils/inc}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1221356041" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -50,7 +51,7 @@
 									<listOptionValue builtIn="false" value="rt"/>
 									<listOptionValue builtIn="false" value="pthread"/>
 								</option>
-								<option id="com.intel.iotdevkit.ide.gnu.cpp.option.link.paths.1939936379" name="Libraries" superClass="com.intel.iotdevkit.ide.gnu.cpp.option.link.paths" valueType="stringList"/>
+								<option id="com.intel.iotdevkit.ide.gnu.cpp.option.link.paths.1939936379" name="Libraries" superClass="com.intel.iotdevkit.ide.gnu.cpp.option.link.paths"/>
 								<option id="gnu.cpp.link.option.userobjs.1319506682" name="Other objects" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SGMutils/out/libSGMutils.a}&quot;"/>
 								</option>
