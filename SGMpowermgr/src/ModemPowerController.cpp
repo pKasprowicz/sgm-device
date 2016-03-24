@@ -8,21 +8,32 @@
 #define MODEM_LOGICAL_ENABLE  (1)
 #define MODEM_LOGICAL_DISABLE (0)
 
-#define MODEM_POWER_ON  (0)
-#define MODEM_POWER_OFF (1)
+#define MODEM_POWER_ON  (1)
+#define MODEM_POWER_OFF (0)
 
+/*
+ * modem operation line states
+ * 0 = modem activated
+ * 1 = modem deactivated
+ */
 #define MODEM_IND_POWER_ON  (0)
 #define MODEM_IND_POWER_OFF (1)
 
 #include <ModemPowerController.h>
 #include <Logger.h>
 
-ProcessSharedFlag<bool> ModemPowerController::itsPowerIndChageFlag(false);
+#include<unistd.h>
+
+std::mutex ModemPowerController::ItsAccessMutex();
 
 ModemPowerController::ModemPowerController(SharedMemory & sharedMem, IModemQuery & powerQuery, IsrHandler powerChangeHandler) :
   modemPowerSetPin(ModemPowerPinNumber),
   modemEnablePin(ModemEnablePinNumber),
-  modemPowerIndPin(PowerStatusPinNumber),
+  //modemPowerIndPin(PowerStatusPinNumber),
+  /*
+   * TODO temporary constructor
+   */
+  modemPowerIndPin(134, true, true),
   battStatusPin(BatteryStatusPinNumber),
   itsModemStatusQuery(powerQuery),
   itsSharedMemory(sharedMem),
@@ -31,10 +42,12 @@ ModemPowerController::ModemPowerController(SharedMemory & sharedMem, IModemQuery
 {
   battStatusPin.dir(mraa::DIR_IN);
   modemPowerIndPin.dir(mraa::DIR_IN);
-  modemPowerIndPin.isr(mraa::EDGE_BOTH,  onPowerIndChange, this);
 
   if (1 == modemPowerIndPin.read())
   {
+    /*
+     * preserve current control lines status
+     */
     modemPowerSetPin.dir(mraa::DIR_OUT);
     modemEnablePin.dir(mraa::DIR_OUT);
 
@@ -42,10 +55,12 @@ ModemPowerController::ModemPowerController(SharedMemory & sharedMem, IModemQuery
   }
   else
   {
-    modemPowerSetPin.dir(mraa::DIR_OUT_HIGH);
+    modemPowerSetPin.dir(mraa::DIR_OUT_LOW);
     modemEnablePin.dir(mraa::DIR_OUT_LOW);
-    itsPowerState = PowerState::UNPOWERED;
+    itsPowerState = PowerState::DISABLED_UNPOWERED;
   }
+
+  modemPowerIndPin.isr(mraa::EDGE_BOTH,  onPowerIndChange, this);
 }
 
 ModemPowerController::~ModemPowerController()
@@ -79,7 +94,7 @@ void ModemPowerController::stabilizePowerState()
 
     if (IModemQuery::Result::OK == modemQueryResult)
     {
-      itsPowerState = PowerState::POWERED_ENABLED;
+      itsPowerState = PowerState::ENABLED;
       modemPowerSetPin.write(MODEM_IND_POWER_ON);
       modemEnablePin.write(MODEM_LOGICAL_ENABLE);
 
@@ -104,7 +119,7 @@ void ModemPowerController::stabilizePowerState()
       sharedData.setModemReady(false);
       sharedData.endAccess();
 
-      itsPowerState = PowerState::UNPOWERED;
+      itsPowerState = PowerState::DISABLED_UNPOWERED;
 
       return;
     }
@@ -118,32 +133,143 @@ void ModemPowerController::stabilizePowerState()
     sharedData.setModemReady(false);
     sharedData.endAccess();
 
-    itsPowerState = PowerState::UNPOWERED;
+    itsPowerState = PowerState::DISABLED_UNPOWERED;
     break;
 
   }
 
 }
 
+ModemPowerController::PowerState ModemPowerController::turnOn()
+{
+  if (PowerState::UNDEFINED == itsPowerState)
+  {
+    return PowerState::UNDEFINED;
+  }
+
+  if (PowerState::ENABLED == itsPowerState)
+  {
+    return PowerState::ENABLED;
+  }
+
+  SGM_LOG_INFO("Turning on the modem");
+
+  modemPowerSetPin.write(MODEM_POWER_ON);
+  modemEnablePin.write(MODEM_LOGICAL_ENABLE);
+
+  sleep(1);
+
+  if (MODEM_IND_POWER_ON == modemPowerIndPin.read())
+  {
+    return PowerState::ENABLED;
+  }
+
+  SGM_LOG_WARN("Modem not responding after 1s, still waiting...");
+  sleep(1);
+
+  if (MODEM_IND_POWER_OFF == modemPowerIndPin.read())
+  {
+    SGM_LOG_ERROR("Unable to turn on the modem");
+    return PowerState::UNDEFINED;
+  }
+
+  return PowerState::ENABLED;
+}
+
+ModemPowerController::PowerState ModemPowerController::turnOff(bool keepPower)
+{
+  modemPowerSetPin.write(MODEM_POWER_OFF);
+
+  PowerState expectedResult = PowerState::DISABLED_UNPOWERED;
+
+  if (keepPower)
+  {
+    modemEnablePin.write(MODEM_LOGICAL_DISABLE);
+    sleep(1);
+    modemPowerSetPin.write(MODEM_POWER_ON);
+    expectedResult = PowerState::DISABLED_POWERED;
+  }
+
+  if (MODEM_IND_POWER_OFF == modemPowerIndPin.read())
+  {
+    return expectedResult;
+  }
+
+  return PowerState::UNDEFINED;
+
+}
+
+ModemPowerController::PowerState ModemPowerController::reset()
+{
+  modemPowerSetPin.write(MODEM_POWER_OFF);
+  modemEnablePin.write(MODEM_LOGICAL_DISABLE);
+  sleep(1);
+  modemPowerSetPin.write(MODEM_POWER_ON);
+  modemEnablePin.write(MODEM_LOGICAL_ENABLE);
+
+  sleep(1);
+
+  if (MODEM_IND_POWER_ON == modemPowerIndPin.read())
+  {
+    return PowerState::ENABLED;
+  }
+
+  SGM_LOG_WARN("Modem not responding after 1s, still waiting...");
+  sleep(1);
+
+  if (MODEM_IND_POWER_OFF == modemPowerIndPin.read())
+  {
+    SGM_LOG_ERROR("Unable to turn on the modem");
+    return PowerState::UNDEFINED;
+  }
+
+  return PowerState::ENABLED;
+}
 
 void ModemPowerController::onPowerIndChange(void * data)
 {
   ModemPowerController * powerController = reinterpret_cast<ModemPowerController *>(data);
 
-  int modemPowerIndication = powerController->modemPowerIndPin.read();
+  int modemPowerIndicationValue = powerController->modemPowerIndPin.read();
+  int modemPowerSetValue        = powerController->modemPowerSetPin.read();
   SharedMemory::SharedData sharedData = powerController->itsSharedMemory.getDataInstance();
 
-  (void)(powerController->itsIsrHandler)(static_cast<void *>(&modemPowerIndication));
+  (void)(powerController->itsIsrHandler)(static_cast<void *>(&modemPowerIndicationValue));
+
+  /*
+   * Modem enable line should always be brought down to be ready to generate rising edge (tunr-on signal)
+   */
+  powerController->modemEnablePin.write(MODEM_LOGICAL_DISABLE);
 
   sharedData.startAccess();
-  switch (modemPowerIndication)
+  switch (modemPowerIndicationValue)
   {
   case MODEM_IND_POWER_OFF:
+    SGM_LOG_INFO("Modem deactivated");
+    switch (modemPowerSetValue)
+    {
+    case MODEM_POWER_OFF:
+      powerController->itsPowerState = ModemPowerController::PowerState::DISABLED_UNPOWERED;
+      SGM_LOG_INFO("Modem is unpowered");
+      break;
+    case MODEM_POWER_ON:
+      powerController->itsPowerState = ModemPowerController::PowerState::DISABLED_POWERED;
+      SGM_LOG_INFO("Modem remains powered");
+      break;
+    default:
+      /*
+       * That should not ever happen
+       */
+      powerController->itsPowerState = ModemPowerController::PowerState::UNDEFINED;
+      break;
+    }
     sharedData.setModemReady(false);
+    SGM_LOG_INFO("Modem disabled");
     break;
 
   case MODEM_IND_POWER_ON:
     sharedData.setModemReady(true);
+    SGM_LOG_INFO("Modem powered and ready");
     break;
   }
   sharedData.endAccess();

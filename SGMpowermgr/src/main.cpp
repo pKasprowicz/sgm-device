@@ -35,7 +35,7 @@ void isr_mock(void * data)
 {
   int * value = reinterpret_cast<int *>(data);
 
-  SGM_LOG_INFO("Executed custom power pin isr with parameter: %d", *value);
+  SGM_LOG_DEBUG("Executed custom power pin isr with parameter: %d", *value);
 }
 
 int main() {
@@ -51,6 +51,8 @@ int main() {
   }
 
   ModemPowerController modemPwrCtl(sharedMem, queryMock, isr_mock);
+
+  modemPwrCtl.turnOn();
 
   while(1);
 
