@@ -15,6 +15,8 @@ extern"C"
 #include <Logger.h>
 #include <IModemQuery.h>
 
+#include <thread>
+
 //TODO turn off digital interface when process is killed
 
 class ModemQueryMock : public IModemQuery
@@ -50,11 +52,9 @@ int main() {
     SGM_LOG_ERROR("Error during shared memory initialization");
   }
 
-  ModemPowerController modemPwrCtl(sharedMem, queryMock, isr_mock);
+  ModemPowerController && modemPwrCtl{ModemPowerController(sharedMem, queryMock, isr_mock)};
+  std::thread powerControllerThread(std::ref(modemPwrCtl));
 
-  modemPwrCtl.turnOn();
 
-  while(1);
-
-  return 0;
+  powerControllerThread.join();
 }

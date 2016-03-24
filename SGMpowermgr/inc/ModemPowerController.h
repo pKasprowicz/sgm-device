@@ -11,10 +11,10 @@
 #include <IModemQuery.h>
 #include <SharedMemory.h>
 
-#include<ProcessSharedFlag.hpp>
-
 #include <mraa/gpio.hpp>
 
+#include <mutex>
+#include <condition_variable>
 
 class ModemPowerController
 {
@@ -31,6 +31,9 @@ public:
   typedef void (*IsrHandler)(void * data);
 
   ModemPowerController(SharedMemory & sharedMem, IModemQuery & powerQuery, IsrHandler powerChangeHandler);
+  ModemPowerController(const ModemPowerController &) = delete;
+  ModemPowerController& operator=(const ModemPowerController &) = delete;
+
   virtual ~ModemPowerController();
 
   PowerState turnOn();
@@ -42,11 +45,15 @@ public:
     return itsPowerState;
   }
 
+  void operator()();
+
 private:
 
   void stabilizePowerState();
 
   static void onPowerIndChange(void * data);
+
+  void powerIndChangeHandler();
 
   mraa::Gpio modemPowerSetPin;
   mraa::Gpio modemEnablePin;
@@ -58,7 +65,10 @@ private:
   PowerState itsPowerState;
   IsrHandler itsIsrHandler;
 
-  static std::mutex ItsAccessMutex;
+  std::mutex itsLockingMutex;
+  std::condition_variable itsCondVar;
+
+  bool powerStateChanged;
 
   static const int PowerStatusPinNumber   = 45; //GP45
   static const int BatteryStatusPinNumber = 0;
