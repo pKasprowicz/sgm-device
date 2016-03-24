@@ -21,6 +21,8 @@ extern "C"
 
 class SharedMemory
 {
+  //TODO implement RAII
+
 public:
 
   /*
