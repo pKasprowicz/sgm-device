@@ -56,5 +56,7 @@ int main() {
   std::thread powerControllerThread(std::ref(modemPwrCtl));
 
 
+  modemPwrCtl.turnOn();
+
   powerControllerThread.join();
 }

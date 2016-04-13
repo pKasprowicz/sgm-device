@@ -37,8 +37,11 @@ public:
   virtual ~ModemPowerController();
 
   PowerState turnOn();
-  PowerState turnOff(bool keepPower = false);
-  PowerState reset();
+  PowerState turnOffHw(bool keepPower = false);
+  PowerState resetHw();
+
+  PowerState turnOffSoft(bool keepPower = false);
+  PowerState resetSoft();
 
   PowerState getPowerState()
   {
