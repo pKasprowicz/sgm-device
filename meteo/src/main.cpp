@@ -7,6 +7,9 @@
 #include <sys/un.h>
 
 #include <SharedMemory.h>
+#include <bgs2/At.h>
+
+#include <mraa/uart.hpp>
 
 using namespace std;
 
@@ -19,41 +22,49 @@ int main() {
 
     SharedMemory::SharedData & sData = sharedMem.getDataInstance();
 
-    while(1)
-    {
-      sData.startAccess();
+//    while(1)
+//    {
+//      sData.startAccess();
+//
+//      if (sData.getModemReady())
+//      {
+//        cout << "Flag value true" << endl;
+//      }
+//      else
+//      {
+//        cout << "Flag value false" << endl;
+//      }
+//
+//      sData.endAccess();
+//      sleep(7);
+//    }
+//
+//	const char message[] = "srutu-tutu";
+//
+//	struct sockaddr_un remote;
+//	int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+//	int len;
+//
+//	remote.sun_family = AF_UNIX;
+//	strcpy(remote.sun_path, SOCKET_PATH);
+//	len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+//	if (connect(s, (struct sockaddr *)&remote, len) == -1)
+//	{
+//		perror("connect");
+//		exit(1);
+//	}
 
-      if (sData.getModemReady())
-      {
-        cout << "Flag value true" << endl;
-      }
-      else
-      {
-        cout << "Flag value false" << endl;
-      }
+//	unsigned int txBytes = send(s, message, sizeof(message), 0U);
+//	printf("Sent %d bytes\n", txBytes);
 
-      sData.endAccess();
-      sleep(7);
-    }
+	mraa::Uart uart1(0);
+	uart1.setBaudRate(57600);
+	uart1.setMode(8, mraa::UART_PARITY_NONE, 1);
+	uart1.setFlowcontrol(false, true);
+	uart1.setTimeout(10, 10, 10);
 
-	const char message[] = "srutu-tutu";
-
-	struct sockaddr_un remote;
-	int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-	int len;
-
-	remote.sun_family = AF_UNIX;
-	strcpy(remote.sun_path, SOCKET_PATH);
-	len = strlen(remote.sun_path) + sizeof(remote.sun_family);
-	if (connect(s, (struct sockaddr *)&remote, len) == -1)
-	{
-		perror("connect");
-		exit(1);
-	}
-
-	unsigned int txBytes = send(s, message, sizeof(message), 0U);
-	printf("Sent %d bytes\n", txBytes);
-
+  bgs2::At at;
+  at.sendAt(uart1);
 
   return 0;
 }

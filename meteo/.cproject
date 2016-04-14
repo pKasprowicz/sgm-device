@@ -19,16 +19,17 @@
 							<builder buildPath="${workspace_loc:/SGMeteo}/Debug" id="com.intel.iotdevkit.builder.879017979" keepEnvironmentInBuildfile="false" name="IoT internal builder" superClass="com.intel.iotdevkit.builder"/>
 							<tool id="com.intel.iotdevkit.ide.tool.gnu.cross.c.compiler.1919636681" name="Cross GCC Compiler" superClass="com.intel.iotdevkit.ide.tool.gnu.cross.c.compiler">
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.696912270" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
-								<option id="gnu.c.compiler.option.debugging.level.691139159" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.debugging.level.691139159" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.default" valueType="enumerated"/>
 								<option id="com.intel.iotdevkit.ide.gnu.c.option.include.paths.53794869" name="Include paths (-I)" superClass="com.intel.iotdevkit.ide.gnu.c.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="${POKY_HOME}/usr/include/mraa"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SGMutils/inc}&quot;"/>
 								</option>
+								<option id="gnu.c.compiler.option.dialect.std.314209099" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.c99" valueType="enumerated"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1538795743" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="com.intel.iotdevkit.ide.tool.gnu.cross.cpp.compiler.1078664868" name="Cross G++ Compiler" superClass="com.intel.iotdevkit.ide.tool.gnu.cross.cpp.compiler">
 								<option id="gnu.cpp.compiler.option.optimization.level.599758862" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.debugging.level.1279109544" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.debugging.level.1279109544" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.1317044027" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.c++11" valueType="enumerated"/>
 								<option id="com.intel.iotdevkit.ide.gnu.cpp.option.include.paths.1834590974" name="Include paths (-I)" superClass="com.intel.iotdevkit.ide.gnu.cpp.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="${POKY_HOME}/usr/include/upm"/>
@@ -52,6 +53,7 @@
 								<option id="gnu.cpp.link.option.userobjs.1876187330" name="Other objects" superClass="gnu.cpp.link.option.userobjs" valueType="userObjs">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/SGMutils/out/libSGMutils.a}&quot;"/>
 								</option>
+								<option id="com.intel.iotdevkit.ide.gnu.cpp.option.link.misc.other.144351853" name="Miscellaneous" superClass="com.intel.iotdevkit.ide.gnu.cpp.option.link.misc.other" value="" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1385150932" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -147,4 +149,5 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>
