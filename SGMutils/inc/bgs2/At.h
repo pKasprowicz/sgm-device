@@ -10,16 +10,19 @@
 
 #include <IAtCommand.h>
 
+#define COMMAND_STRING "AT+COPS?\r\n"
+#define RESPONSE_SIZE 50U
+
 namespace bgs2
 {
 
-  class At : public IAtCommand
+  class At : public ::IAtCommand
   {
   public:
 
     At();
 
-    virtual Result sendAt(mraa::Uart & _uart, int timeout = 0);
+    virtual IAtCommand::Result sendAt(mraa::Uart & _uart, int timeout = 0);
     virtual const AtResponse & getResponse();
 
     virtual ~At();
@@ -28,9 +31,6 @@ namespace bgs2
 
     char rxBuffer[RX_BUF_SIZE];
 
-
-    static const char CommandString[];
-    static const int ResponseSize = 4U;
   };
 
 }

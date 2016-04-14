@@ -21,12 +21,19 @@ public:
   enum class Result
   {
     AT_OK,
+    AT_ERROR,
     AT_ERROR_CMS,
     AT_ERROR_CME
   };
 
-  IAtCommand();
-  virtual ~IAtCommand();
+  IAtCommand()
+  {
+
+  }
+  virtual ~IAtCommand()
+  {
+
+  }
 
   virtual Result sendAt(mraa::Uart & _uart, int timeout = 0) = 0;
   virtual const AtResponse & getResponse() = 0;
