@@ -8,9 +8,28 @@
 #ifndef ATRESPONSE_H_
 #define ATRESPONSE_H_
 
-class AtResponse
+struct AtResponse
 {
+    enum class ReturnCode
+    {
+        OK,
+        ERROR,
+        CME_ERROR,
+        CMS_ERROR
+    };
 
+    AtResponse() :
+      responseCorrect(false),
+      commandReturnCode(ReturnCode::ERROR)
+    {
+
+    }
+
+    AtResponse(const AtResponse & ) = delete;
+    AtResponse & operator = (const AtResponse &) = delete;
+
+    bool responseCorrect;
+    ReturnCode commandReturnCode;
 };
 
 

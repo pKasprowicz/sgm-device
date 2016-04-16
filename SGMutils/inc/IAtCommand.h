@@ -12,7 +12,7 @@
 
 #include <AtResponse.h>
 
-#define RX_BUF_SIZE 100
+#define RX_BUF_SIZE 200
 
 class IAtCommand
 {
@@ -20,10 +20,17 @@ public:
 
   enum class Result
   {
-    AT_OK,
-    AT_ERROR,
-    AT_ERROR_CMS,
-    AT_ERROR_CME
+    AT_SENT,
+    AT_UART_ERROR,
+    AT_UNKNOWN_ERROR
+  };
+
+  enum class CommandType
+  {
+      AT_EXECUTE,
+      AT_READ,
+      AT_TEST,
+      AT_WRITE
   };
 
   IAtCommand()
@@ -35,7 +42,7 @@ public:
 
   }
 
-  virtual Result sendAt(mraa::Uart & _uart, int timeout = 0) = 0;
+  virtual Result sendAt(mraa::Uart & _uart, CommandType cmdType, int timeout = 0) = 0;
   virtual const AtResponse & getResponse() = 0;
 
 private:

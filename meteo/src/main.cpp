@@ -7,7 +7,11 @@
 #include <sys/un.h>
 
 #include <SharedMemory.h>
-#include <bgs2/At.h>
+#include <AtCommand.h>
+#include <AtResponse.h>
+#include <IAtCommand.h>
+#include <bgs2/at/At.h>
+#include <bgs2/PlainAtInterpreter.h>
 
 #include <mraa/uart.hpp>
 
@@ -63,8 +67,15 @@ int main() {
 	uart1.setFlowcontrol(false, true);
 	uart1.setTimeout(10, 10, 10);
 
-  bgs2::At at;
-  at.sendAt(uart1);
+	AtCommand<PlainAtInterpreter, bgs2::At>commandAT;
+
+	IAtCommand::Result res = commandAT.sendAt(uart1, IAtCommand::CommandType::AT_EXECUTE, 100);
+	const AtResponse & resp = commandAT.getResponse();
+
+	if (resp.commandReturnCode != AtResponse::ReturnCode::OK)
+	{
+	  return -1;
+	}
 
   return 0;
 }
