@@ -8,9 +8,10 @@
 #ifndef IATCOMMAND_H_
 #define IATCOMMAND_H_
 
+#include <AtGenericResponse.h>
 #include <mraa/uart.hpp>
 
-#include <AtResponse.h>
+#include <memory>
 
 #define RX_BUF_SIZE 200
 
@@ -30,7 +31,8 @@ public:
       AT_EXECUTE,
       AT_READ,
       AT_TEST,
-      AT_WRITE
+      AT_WRITE,
+      AT_INVALID
   };
 
   IAtCommand()
@@ -43,7 +45,7 @@ public:
   }
 
   virtual Result sendAt(mraa::Uart & _uart, CommandType cmdType, int timeout = 0) = 0;
-  virtual const AtResponse & getResponse() = 0;
+  virtual std::unique_ptr<AtGenericResponse> getResponse() = 0;
 
 private:
 

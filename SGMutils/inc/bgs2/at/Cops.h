@@ -17,7 +17,7 @@ namespace bgs2
   {
     public:
       Cops();
-      Cops(int _networkId);
+      Cops(unsigned int _networkId);
       Cops(char _networkName[]);
 
       int renderCommand(char * txBuffer, IAtCommand::CommandType cmdType);
@@ -26,7 +26,8 @@ namespace bgs2
 
     private:
 
-      void prepareWriteCommand(std::string & command);
+      bool prepareWriteCommand(std::string & command);
+      bool prepareReadCommand(std::string & command);
 
       int mode;
       int format;

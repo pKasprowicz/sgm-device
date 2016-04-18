@@ -28,6 +28,7 @@ extern "C"
 
 #define SGM_LOG_DEBUG(message, ...)  printf("[LOG_DEBUG]  " message "\n", ##__VA_ARGS__);
 
+#define SGM_LOG_FATAL(message, ...)  printf("[LOG_FATAL]  " message "\n", ##__VA_ARGS__);
 
 #ifdef __cplusplus
 }

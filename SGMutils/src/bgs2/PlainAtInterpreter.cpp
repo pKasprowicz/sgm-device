@@ -8,32 +8,36 @@
 #include "bgs2/PlainAtInterpreter.h"
 #include <regex>
 
-#define EXEC_REGEX "\r\n(OK|ERROR)\r\n"
+#define EXEC_REGEX  "([^]*?)" \
+                    "\r\n(OK|ERROR)\r\n"
 
-AtResponse && PlainAtInterpreter::getResponse(const char * rxBuf)
+namespace bgs2
 {
-  AtResponse resp;
 
-  std::regex atExecRegex(EXEC_REGEX);
-  std::cmatch base_match;
+  std::unique_ptr<AtGenericResponse> PlainAtInterpreter::getResponse(const char * rxBuf, IAtCommand::CommandType cmdType)
+  {
+    std::regex atExecRegex(EXEC_REGEX);
+    std::cmatch base_match;
 
-  if (std::regex_match(rxBuf, base_match, atExecRegex))
-  {
-    resp.responseCorrect = true;
-  }
-  else
-  {
-    return std::move(resp);
+    bool isResponseCorrect = false;
+    AtGenericResponse::ReturnCode commandReturnCode{AtGenericResponse::ReturnCode::ERROR};
+
+    if (std::regex_match(rxBuf, base_match, atExecRegex))
+    {
+      isResponseCorrect = true;
+    }
+    else
+    {
+      return std::unique_ptr<AtGenericResponse>(new AtGenericResponse());
+    }
+
+    if (2U == base_match[2].length())
+    {
+      commandReturnCode = AtGenericResponse::ReturnCode::OK;
+    }
+
+    return std::unique_ptr<AtGenericResponse>(new AtGenericResponse(isResponseCorrect, commandReturnCode, 0));
   }
 
-  if (2U == base_match[1].length())
-  {
-    resp.commandReturnCode = AtResponse::ReturnCode::OK;
-  }
-  else
-  {
-    resp.commandReturnCode = AtResponse::ReturnCode::ERROR;
-  }
-
-  return std::move(resp);
 }
+

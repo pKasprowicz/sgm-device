@@ -26,7 +26,7 @@ namespace bgs2
   {
   }
 
-  Cops::Cops(int _networkId) :
+  Cops::Cops(unsigned int _networkId) :
       mode(1U),
       format(2U),
       networkId(_networkId),
@@ -45,56 +45,94 @@ namespace bgs2
 
   int Cops::renderCommand(char* txBuffer, IAtCommand::CommandType cmdType)
   {
-    std::string command{COPS_COMMAND};
+    std::string commandText{COPS_COMMAND};
+
+    bool isCommandRendered = false;
 
     switch(cmdType)
     {
       case IAtCommand::CommandType::AT_READ:
+        isCommandRendered = prepareReadCommand(commandText);
         break;
 
       case IAtCommand::CommandType::AT_WRITE:
-        prepareWriteCommand(command);
+        isCommandRendered = prepareWriteCommand(commandText);
+        break;
+
+      case IAtCommand::CommandType::AT_EXECUTE:
+        SGM_LOG_FATAL("+COPS : exec command unspecified");
+        break;
+
+      case IAtCommand::CommandType::AT_TEST:
+        SGM_LOG_WARN("+COPS : test command not supported");
+        break;
+
+      default:
+        SGM_LOG_FATAL("+COPS : command has not been sent yet to ME");
         break;
     }
+
+
+    if(isCommandRendered)
+    {
+      int renderedCommandLength = commandText.length();
+      commandText.copy(txBuffer, renderedCommandLength);
+      SGM_LOG_DEBUG("+COPS : rendered command : %s", commandText.c_str());
+      return renderedCommandLength;
+    }
+
+    return 0U;
+
   }
 
   bgs2::Cops::~Cops()
   {
   }
 
-  void Cops::prepareWriteCommand(std::string& command)
+  bool Cops::prepareWriteCommand(std::string& command)
   {
+    bool retVal = true;
+
     command += "=";
     switch(mode)
     {
       case 0:
         command += "0\r\n";
-        return;
+        return retVal;
 
       case 1:
         switch(format)
         {
           case 0: //long alphanumeric
-            command += "1,0," + networkId;
+            command += "1,0,";
+            command += networkName;
             break;
 
           case 2:
             command += "1,2,";
-            command += networkName;
+            command.append(std::to_string(networkId));
             break;
 
           default:
             SGM_LOG_ERROR("AT+COPS : unsupported <format>");
+            retVal = false;
             break;
         }
         break;
 
         default:
           SGM_LOG_ERROR("AT+COPS : unknown or unsupported <mode>");
+          retVal = false;
           break;
     }
 
     command += "\r\n";
   }
+
+bool Cops::prepareReadCommand(std::string& command)
+{
+  command += "=?\r\n";
+  return true;
+}
 
 } /* namespace bgs2 */

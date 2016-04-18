@@ -8,16 +8,25 @@
 #ifndef BGS2_PLAINATINTERPRETER_H_
 #define BGS2_PLAINATINTERPRETER_H_
 
-#include <AtResponse.h>
+#include <AtGenericResponse.h>
+#include <IAtCommand.h>
 
-class PlainAtInterpreter
+#include <memory>
+
+namespace bgs2
 {
-  public:
 
-    static AtResponse && getResponse(const char * rxBuf);
+  class PlainAtInterpreter
+  {
+    public:
 
-  private:
+    static std::unique_ptr<AtGenericResponse> getResponse(const char * rxBuf, IAtCommand::CommandType cmdType);
 
-};
+    private:
+
+  };
+
+}
+
 
 #endif /* BGS2_PLAINATINTERPRETER_H_ */

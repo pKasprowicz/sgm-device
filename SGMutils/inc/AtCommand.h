@@ -14,10 +14,12 @@
 
 #include<mraa/uart.hpp>
 
+#include <memory>
+
 template<typename ResponseInterpreter, typename AtSpec> class AtCommand : public IAtCommand
 {
   private:
-    static char rxBuffer[RX_BUF_SIZE];
+    static char txRxBuffer[RX_BUF_SIZE];
 
   public:
 
@@ -38,41 +40,47 @@ template<typename ResponseInterpreter, typename AtSpec> class AtCommand : public
 
     virtual Result sendAt(mraa::Uart & _uart, CommandType cmdType, int timeout = 0)
     {
-      int commandLength = itsAtSpec.renderCommand(&rxBuffer[0], CommandType::AT_EXECUTE);
+      int commandLength = itsAtSpec.renderCommand(&txRxBuffer[0], cmdType);
 
       if(0 > commandLength)
       {
-       return IAtCommand::Result::AT_UART_ERROR;
        SGM_LOG_ERROR("Could not get properly rendered AT command");
+       return IAtCommand::Result::AT_UART_ERROR;
       }
 
-      if (_uart.write(&rxBuffer[0], commandLength) != commandLength)
+      if (_uart.write(&txRxBuffer[0], commandLength) != commandLength)
       {
-        return IAtCommand::Result::AT_UART_ERROR;
         SGM_LOG_ERROR("Unable to send AT command");
+        return IAtCommand::Result::AT_UART_ERROR;
       }
+
+      /*
+       * TODO somewhere here we need to start polling for incoming characters in case
+       * of commands which takes long to process i.e. +COPS
+       */
 
       unsigned int readBytes = 0U;
 
       while (_uart.dataAvailable(100))
       {
-        readBytes += _uart.read(&rxBuffer[readBytes], RX_BUF_SIZE);
+        readBytes += _uart.read(&txRxBuffer[readBytes], RX_BUF_SIZE);
       }
 
-      rxBuffer[readBytes] = '\0';
+      txRxBuffer[readBytes] = '\0';
       ++readBytes;
       return IAtCommand::Result::AT_SENT;
     }
 
-    virtual const AtResponse & getResponse()
+    virtual std::unique_ptr<AtGenericResponse> getResponse()
     {
-      return ResponseInterpreter::getResponse(rxBuffer);
+      return ResponseInterpreter::getResponse(txRxBuffer, lastSentCommandType);
     }
 
   private:
 
     AtSpec itsAtSpec;
+    CommandType lastSentCommandType = CommandType::AT_INVALID;
 };
 
-template<typename ResponseInterpreter, typename AtSpec> char AtCommand<ResponseInterpreter, AtSpec>::rxBuffer[RX_BUF_SIZE];
+template<typename ResponseInterpreter, typename AtSpec> char AtCommand<ResponseInterpreter, AtSpec>::txRxBuffer[RX_BUF_SIZE];
 #endif /* ATCOMMAND_H_ */
