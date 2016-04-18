@@ -8,10 +8,16 @@
 
 #include <SharedMemory.h>
 #include <AtCommand.h>
-#include <AtResponse.h>
+#include <AtGenericResponse.h>
 #include <IAtCommand.h>
+
 #include <bgs2/at/At.h>
 #include <bgs2/PlainAtInterpreter.h>
+
+#include <bgs2/at/Cops.h>
+#include <bgs2/at/CopsResponse.h>
+#include <bgs2/CopsInterpreter.h>
+
 
 #include <mraa/uart.hpp>
 
@@ -67,15 +73,30 @@ int main() {
 	uart1.setFlowcontrol(false, true);
 	uart1.setTimeout(10, 10, 10);
 
-	AtCommand<PlainAtInterpreter, bgs2::At>commandAT;
+	AtCommand<bgs2::PlainAtInterpreter, bgs2::At>commandAT;
 
-	IAtCommand::Result res = commandAT.sendAt(uart1, IAtCommand::CommandType::AT_EXECUTE, 100);
-	const AtResponse & resp = commandAT.getResponse();
+	IAtCommand & atc = commandAT;
+	IAtCommand::Result res = atc.sendAt(uart1, IAtCommand::CommandType::AT_EXECUTE, 100);
 
-	if (resp.commandReturnCode != AtResponse::ReturnCode::OK)
+	std::unique_ptr<AtGenericResponse> resp = commandAT.getResponse();
+
+	if (resp->getReturnCode() != AtGenericResponse::ReturnCode::OK)
 	{
 	  return -1;
 	}
+
+	AtCommand<bgs2::PlainAtInterpreter, bgs2::Cops> networkCommand(bgs2::Cops{26001});
+
+	res = networkCommand.sendAt(uart1, IAtCommand::CommandType::AT_WRITE, 100);
+
+	std::unique_ptr<AtGenericResponse> response2 = networkCommand.getResponse();
+
+	if (response2->getReturnCode() != AtGenericResponse::ReturnCode::OK)
+	  {
+	    return -1;
+	  }
+
+
 
   return 0;
 }
