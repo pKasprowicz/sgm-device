@@ -27,19 +27,19 @@
 #include <chrono>
 #include <thread>
 
-ModemPowerController::ModemPowerController(SharedMemory & sharedMem, IModemQuery & powerQuery, IsrHandler powerChangeHandler) :
+ModemPowerController::ModemPowerController(SharedMemory & sharedMem, IModemQuery & powerQuery, std::function<void(void)> isrCallback) :
   modemPowerSetPin(ModemPowerPinNumber),
   modemEnablePin(ModemEnablePinNumber),
   //modemPowerIndPin(PowerStatusPinNumber),
   /*
    * TODO temporary constructor
    */
-  modemPowerIndPin(134, true, true),
+  modemPowerIndPin(45, true, true),
   battStatusPin(BatteryStatusPinNumber),
   itsModemStatusQuery(powerQuery),
   itsSharedMemory(sharedMem),
   itsPowerState(PowerState::UNDEFINED),
-  itsIsrHandler(powerChangeHandler),
+  itsIsrCallback(isrCallback),
   powerStateChanged(false)
 {
   battStatusPin.dir(mraa::DIR_IN);
@@ -94,6 +94,8 @@ void ModemPowerController::stabilizePowerState()
   case MODEM_IND_POWER_ON:
     modemQueryResult = itsModemStatusQuery.run();
 
+    SGM_LOG_DEBUG("ModemPowerController::stabilizePowerState() : MODEM_IND_POWER_ON");
+
     if (IModemQuery::Result::OK == modemQueryResult)
     {
       itsPowerState = PowerState::ENABLED;
@@ -130,6 +132,9 @@ void ModemPowerController::stabilizePowerState()
     break;
 
   case MODEM_IND_POWER_OFF:
+
+    SGM_LOG_DEBUG("ModemPowerController::stabilizePowerState() : MODEM_IND_POWER_OFF");
+
     sharedData.startAccess();
     sharedData.setModemReady(false);
     sharedData.endAccess();
@@ -227,7 +232,7 @@ void ModemPowerController::onPowerIndChange(void * data)
   ModemPowerController & powerController = *(reinterpret_cast<ModemPowerController *>(data));
 
   {
-    std::unique_lock<std::mutex>(powerController.itsLockingMutex);
+    std::lock_guard<std::mutex> lock(powerController.itsLockingMutex);
     powerController.powerStateChanged = true;
   }
 
@@ -239,8 +244,6 @@ void ModemPowerController::powerIndChangeHandler()
     int modemPowerIndicationValue = modemPowerIndPin.read();
     SharedMemory::SharedData sharedData =itsSharedMemory.getDataInstance();
 
-    (void)(itsIsrHandler)(static_cast<void *>(&modemPowerIndicationValue));
-
     sharedData.startAccess();
     switch (modemPowerIndicationValue)
     {
@@ -249,14 +252,18 @@ void ModemPowerController::powerIndChangeHandler()
       modemPowerSetPin.write(MODEM_POWER_ON);
 
       sharedData.setModemReady(false);
+      itsPowerState = PowerState::DISABLED_POWERED;
       SGM_LOG_INFO("Modem disabled and powered");
       break;
 
     case MODEM_IND_POWER_ON:
       modemEnablePin.write(MODEM_LINE_IDLE);
+      itsPowerState = PowerState::ENABLED;
       sharedData.setModemReady(true);
       SGM_LOG_INFO("Modem powered and ready");
       break;
     }
     sharedData.endAccess();
+
+    itsIsrCallback();
 }

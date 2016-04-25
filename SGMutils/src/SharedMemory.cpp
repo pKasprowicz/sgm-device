@@ -130,11 +130,11 @@ void SharedMemory::SharedData::setData(SGMShared_t * const pData)
 void SharedMemory::SharedData::startAccess()
 {
   if (0U == pthread_mutex_lock(&sharedMemory->mutex)){
-    SGM_LOG_DEBUG("shared mem mutex locked");
+    SGM_LOG_DEBUG("SharedData::startAccess() : mutex locked");
   }
   else
   {
-    SGM_LOG_DEBUG("mutex acquire error");
+    SGM_LOG_DEBUG("SharedData::startAccess() : mutex acquire error");
     abort();
   }
 }
@@ -143,17 +143,18 @@ void SharedMemory::SharedData::endAccess()
 {
 
   if (0U == pthread_mutex_unlock(&sharedMemory->mutex)){
-    SGM_LOG_DEBUG("shared mem mutex released");
+    SGM_LOG_DEBUG("SharedData::endAccess() : mutex released");
   }
   else
   {
-    SGM_LOG_DEBUG("mutex release error");
+    SGM_LOG_DEBUG("SharedData::endAccess() : mutex release error");
     abort();
   }
 }
 
 void SharedMemory::SharedData::setModemReady(const bool flag)
 {
+  SGM_LOG_DEBUG("SharedData::setModemReady() : setting modem rady flag to %d", flag);
   sharedMemory->isModemReady = flag;
 }
 

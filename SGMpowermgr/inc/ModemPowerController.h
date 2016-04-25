@@ -29,8 +29,9 @@ public:
   };
 
   typedef void (*IsrHandler)(void * data);
+  typedef void * IsrData;
 
-  ModemPowerController(SharedMemory & sharedMem, IModemQuery & powerQuery, IsrHandler powerChangeHandler);
+  ModemPowerController(SharedMemory & sharedMem, IModemQuery & powerQuery, std::function<void(void)> isrCallback);
   ModemPowerController(const ModemPowerController &) = delete;
   ModemPowerController& operator=(const ModemPowerController &) = delete;
 
@@ -66,7 +67,7 @@ private:
   IModemQuery & itsModemStatusQuery;
   SharedMemory & itsSharedMemory;
   PowerState itsPowerState;
-  IsrHandler itsIsrHandler;
+  std::function<void(void)> itsIsrCallback;
 
   std::mutex itsLockingMutex;
   std::condition_variable itsCondVar;

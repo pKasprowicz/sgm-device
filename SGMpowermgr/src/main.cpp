@@ -11,9 +11,10 @@ extern"C"
 }
 
 #include <SharedMemory.h>
-#include <ModemPowerController.h>
+
+#include "PowerManager.h"
+
 #include <Logger.h>
-#include <IModemQuery.h>
 
 #include <thread>
 
@@ -45,18 +46,16 @@ int main() {
   mraa_init();
 
   SharedMemory sharedMem;
-  ModemQueryMock queryMock;
-
   if (SharedMemory::Result::INIT_ERROR == sharedMem.init())
   {
     SGM_LOG_ERROR("Error during shared memory initialization");
+    return -1;
   }
 
-  ModemPowerController && modemPwrCtl{ModemPowerController(sharedMem, queryMock, isr_mock)};
-  std::thread powerControllerThread(std::ref(modemPwrCtl));
+  PowerManager powerManager(sharedMem);
+  ModemQueryMock queryMock;
 
 
-  modemPwrCtl.turnOn();
+  powerManager.run();
 
-  powerControllerThread.join();
 }
