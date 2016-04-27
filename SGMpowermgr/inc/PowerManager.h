@@ -13,6 +13,7 @@
 #include "SharedMemory.h"
 #include "ModemPresenceQuery.h"
 #include "ModemCMux.h"
+#include "HistoricalValue.h"
 
 class PowerManager
 {
@@ -63,9 +64,9 @@ private:
 
   void determineInitialConditions();
 
-  DeviceState itsDeviceState = DeviceState::UNDEFINED;
+  HistoricalValue<DeviceState> itsDeviceState{DeviceState::UNDEFINED};
 
-  ModemPowerController::PowerState storedPowerState = ModemPowerController::PowerState::UNDEFINED;
+  HistoricalValue<ModemPowerController::PowerState> storedPowerState{ModemPowerController::PowerState::UNDEFINED};
 
   ModemPresenceQuery itsModemQuery;
   ModemPowerController itsPowerController;

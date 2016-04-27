@@ -22,11 +22,12 @@ void PowerManager::onPowerIndChange(void * data)
   {
     std::unique_lock<std::mutex> eventLock(instance.itsLockingMutex);
 
-    if (currentPowerState != storedPowerState)
+    instance.storedPowerState.set(currentPowerState);
+
+    if (instance.storedPowerState.hasChanged())
     {
       eventLock.unlock();
-      storedPowerState = currentPowerState;
-      itsCondVariable.notify_all();
+      instance.itsCondVariable.notify_all();
     }
   }
 
@@ -69,7 +70,7 @@ void PowerManager::processStateMachine(Event evType)
 {
   SGM_LOG_DEBUG("void PowerManager::processStateMachine() : event tick");
 
-  switch(storedPowerState)
+  switch(storedPowerState.get())
   {
   case ModemPowerController::PowerState::ENABLED:
     break;
@@ -91,36 +92,45 @@ PowerManager::Event PowerManager::computeEvent()
 {
   Event retVal = Event::UNDEFINED;
 
-  switch(itsDeviceState)
+  if (!itsDeviceState.hasChanged())
+
+  switch(itsDeviceState.get())
   {
   case DeviceState::MODEM_OFF:
-    if (ModemPowerController::PowerState::ENABLED == storedPowerState)
+    if (storedPowerState.is(ModemPowerController::PowerState::ENABLED))
     {
       retVal = Event::ASYNC_TURN_ON;
     }
     else
     {
-      SGM_LOG_WARN("PowerManager::computeEvent() : event %d has no effect", storedPowerState);
+      SGM_LOG_WARN("PowerManager::computeEvent() : event %d has no effect", storedPowerState.get());
     }
     break;
 
   case DeviceState::MODEM_READY:
   case DeviceState::MODEM_CMUX:
-    if ( (ModemPowerController::PowerState::DISABLED_POWERED == storedPowerState)
-      || (ModemPowerController::PowerState::DISABLED_UNPOWERED == storedPowerState) )
+    if ( (storedPowerState.is(ModemPowerController::PowerState::DISABLED_POWERED))
+      || (storedPowerState.is(ModemPowerController::PowerState::DISABLED_UNPOWERED)) )
     {
       retVal = Event::ASYNC_TURN_OFF;
     }
     break;
+
+  default:
+    SGM_LOG_ERROR("PowerManager::computeEvent() : device not in defined state");
+    break;
+
   }
+
+  return retVal;
 
 }
 
 void PowerManager::determineInitialConditions()
 {
-  storedPowerState =  itsPowerController.getPowerState();
+  storedPowerState.set(itsPowerController.getPowerState());
 
-  switch(storedPowerState)
+  switch(storedPowerState.get())
   {
     case ModemPowerController::PowerState::ENABLED:
       break;
