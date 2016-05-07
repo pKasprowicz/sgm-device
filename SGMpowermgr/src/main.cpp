@@ -10,9 +10,10 @@ extern"C"
 #include <unistd.h>
 }
 
-#include <SharedMemory.h>
+#include "SharedMemory.h"
 
 #include "PowerManager.h"
+#include "BGS2CMux.h"
 
 #include <Logger.h>
 
@@ -45,6 +46,8 @@ int main() {
 
   mraa_init();
 
+  BGS2CMux cMuxDriver;
+
   SharedMemory sharedMem;
   if (SharedMemory::Result::INIT_ERROR == sharedMem.init())
   {
@@ -52,7 +55,7 @@ int main() {
     return -1;
   }
 
-  PowerManager powerManager(sharedMem);
+  PowerManager powerManager(sharedMem, cMuxDriver);
   ModemQueryMock queryMock;
 
 

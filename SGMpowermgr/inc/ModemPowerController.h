@@ -55,7 +55,7 @@ private:
 
   void stabilizePowerState();
 
-  static void onPowerIndChange(void * data);
+  static void powerIndicationIsr(void * data);
 
   void powerIndChangeHandler();
 

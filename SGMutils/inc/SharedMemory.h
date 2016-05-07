@@ -41,6 +41,9 @@ public:
     void setModemReady(const bool flag);
     bool getModemReady();
 
+    void setCmuxReady(const bool flag);
+    bool getCmuxReady();
+
   private:
     void setData(SGMShared_t * const pData);
 

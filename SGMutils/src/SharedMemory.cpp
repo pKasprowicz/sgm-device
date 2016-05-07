@@ -120,6 +120,7 @@ void SharedMemory::SharedData::initData()
   pthread_mutex_init(&sharedMemory->mutex, &mutexAttributes);
 
   sharedMemory->isModemReady = false;
+  sharedMemory->isCmuxReady = false;
 }
 
 void SharedMemory::SharedData::setData(SGMShared_t * const pData)
@@ -154,11 +155,22 @@ void SharedMemory::SharedData::endAccess()
 
 void SharedMemory::SharedData::setModemReady(const bool flag)
 {
-  SGM_LOG_DEBUG("SharedData::setModemReady() : setting modem rady flag to %d", flag);
+  SGM_LOG_DEBUG("SharedData::setModemReady() : setting modem ready flag to %d", flag);
   sharedMemory->isModemReady = flag;
 }
 
 bool SharedMemory::SharedData::getModemReady()
 {
   return sharedMemory->isModemReady;
+}
+
+void SharedMemory::SharedData::setCmuxReady(const bool flag)
+{
+  SGM_LOG_DEBUG("SharedData::setCmuxReady() : setting CMUX ready flag to %d", flag);
+  sharedMemory->isCmuxReady = flag;
+}
+
+bool SharedMemory::SharedData::getCmuxReady()
+{
+  return sharedMemory->isCmuxReady;
 }

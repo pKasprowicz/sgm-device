@@ -27,16 +27,19 @@ void PowerManager::onPowerIndChange(void * data)
     if (instance.storedPowerState.hasChanged())
     {
       eventLock.unlock();
+      SGM_LOG_INFO("PowerManager::onPowerIndChange : old power state : %d", instance.storedPowerState.getHistory());
+      SGM_LOG_INFO("PowerManager::onPowerIndChange : new power state : %d", currentPowerState);
       instance.itsCondVariable.notify_all();
     }
   }
 
 }
 
-PowerManager::PowerManager(SharedMemory & sharedMem) :
+PowerManager::PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver) :
     itsModemQuery(),
+    itsSharedMemory(sharedMem),
     itsPowerController(sharedMem, itsModemQuery, std::bind(&PowerManager::onPowerIndChange, this)),
-    itsModemCMux()
+    itsModemCMux(cMuxDriver)
 {
 
 }
@@ -46,6 +49,8 @@ void PowerManager::run()
   std::thread powerControllerThread(std::ref(itsPowerController));
 
   determineInitialConditions();
+
+  SGM_LOG_DEBUG("PowerManager::run() : turning modem on");
 
   itsPowerController.turnOn();
 
@@ -68,23 +73,46 @@ PowerManager::~PowerManager()
 
 void PowerManager::processStateMachine(Event evType)
 {
-  SGM_LOG_DEBUG("void PowerManager::processStateMachine() : event tick");
+  SGM_LOG_DEBUG("PowerManager::processStateMachine() : event tick");
 
-  switch(storedPowerState.get())
+  SharedMemory::SharedData & sData = itsSharedMemory.getDataInstance();
+
+  switch(evType)
   {
-  case ModemPowerController::PowerState::ENABLED:
+  case Event::ASYNC_TURN_OFF:
+    sData.startAccess();
+    sData.setCmuxReady(false);
+    sData.endAccess();
+    itsModemCMux.turnOff();
     break;
 
-  case ModemPowerController::PowerState::DISABLED_POWERED:
+  case Event::ASYNC_TURN_ON:
+    if (ICMuxDriver::Result::MUX_ON == itsModemCMux.turnOn())
+    {
+      SGM_LOG_DEBUG("PowerManager::processStateMachine : CMUX turned on");
+      sData.startAccess();
+      sData.setCmuxReady(true);
+      sData.endAccess();
+      itsDeviceState.set(DeviceState::MODEM_CMUX);
+    }
+    else
+    {
+      SGM_LOG_DEBUG("PowerManager::processStateMachine : could not turn the CMUX on");
+      itsDeviceState.set(DeviceState::MODEM_FAILED);
+    }
     break;
 
-  case ModemPowerController::PowerState::DISABLED_UNPOWERED:
+
+  case Event::NONE:
+    SGM_LOG_DEBUG("PowerManager::processStateMachine : no-change event occured");
     break;
 
-  case ModemPowerController::PowerState::UNDEFINED:
-    SGM_LOG_FATAL("PowerManager::processStateMachine() : UNDEFINED state requested to be processed. Recovering...");
+  case Event::UNDEFINED:
+    SGM_LOG_ERROR("PowerManager::processStateMachine : undefined event raised");
     break;
   }
+
+  SGM_LOG_INFO("Event processed; current device state : %d", itsDeviceState.get());
 
 }
 
@@ -93,6 +121,9 @@ PowerManager::Event PowerManager::computeEvent()
   Event retVal = Event::UNDEFINED;
 
   if (!itsDeviceState.hasChanged())
+  {
+    return Event::NONE;
+  }
 
   switch(itsDeviceState.get())
   {
@@ -103,7 +134,8 @@ PowerManager::Event PowerManager::computeEvent()
     }
     else
     {
-      SGM_LOG_WARN("PowerManager::computeEvent() : event %d has no effect", storedPowerState.get());
+      SGM_LOG_WARN("PowerManager::computeEvent() : no event triggered in state %d", storedPowerState.get());
+      retVal = Event::NONE;
     }
     break;
 
@@ -114,6 +146,11 @@ PowerManager::Event PowerManager::computeEvent()
     {
       retVal = Event::ASYNC_TURN_OFF;
     }
+    else
+    {
+      SGM_LOG_WARN("PowerManager::computeEvent() : event has no effect in state %d", storedPowerState.get());
+      retVal = Event::NONE;
+    }
     break;
 
   default:
@@ -122,21 +159,27 @@ PowerManager::Event PowerManager::computeEvent()
 
   }
 
+  SGM_LOG_INFO("PowerManager::computeEvent : computed event %d", retVal);
   return retVal;
 
 }
 
 void PowerManager::determineInitialConditions()
 {
+  SGM_LOG_DEBUG("PowerManager::determineInitialConditions() : entering function");
   storedPowerState.set(itsPowerController.getPowerState());
 
   switch(storedPowerState.get())
   {
     case ModemPowerController::PowerState::ENABLED:
+      itsDeviceState.set(DeviceState::MODEM_READY);
+      SGM_LOG_INFO("PowerManager::determineInitialConditions() : initializing modem to %d state", DeviceState::MODEM_READY);
       break;
 
     case ModemPowerController::PowerState::DISABLED_POWERED:
     case ModemPowerController::PowerState::DISABLED_UNPOWERED:
+      itsDeviceState.set(DeviceState::MODEM_OFF);
+      SGM_LOG_INFO("PowerManager::determineInitialConditions() : initializing modem to %d state", DeviceState::MODEM_OFF);
       break;
 
     default:

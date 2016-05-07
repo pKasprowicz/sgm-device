@@ -8,11 +8,12 @@
 #ifndef POWERSTATEMACHINE_H_
 #define POWERSTATEMACHINE_H_
 
+#include "ICMuxDriver.h"
+
 #include "ModemPowerController.h"
 
 #include "SharedMemory.h"
 #include "ModemPresenceQuery.h"
-#include "ModemCMux.h"
 #include "HistoricalValue.h"
 
 class PowerManager
@@ -26,7 +27,7 @@ public:
     MODEM_ON_CMUX_ON,
   };
 
-  PowerManager(SharedMemory & sharedMem);
+  PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver);
 
   PowerManager(const PowerManager &) = delete;
   PowerManager(const PowerManager &&) = delete;
@@ -55,6 +56,7 @@ private:
     REQ_TURN_OFF,
     ASYNC_TURN_ON,
     ASYNC_TURN_OFF,
+    NONE,
     UNDEFINED
   };
 
@@ -69,8 +71,9 @@ private:
   HistoricalValue<ModemPowerController::PowerState> storedPowerState{ModemPowerController::PowerState::UNDEFINED};
 
   ModemPresenceQuery itsModemQuery;
+  SharedMemory & itsSharedMemory;
   ModemPowerController itsPowerController;
-  ModemCMux itsModemCMux;
+  ICMuxDriver & itsModemCMux;
 
 
   std::condition_variable itsCondVariable;
