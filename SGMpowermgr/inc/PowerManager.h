@@ -16,6 +16,8 @@
 #include "ModemPresenceQuery.h"
 #include "HistoricalValue.h"
 
+#include <mraa/uart.hpp>
+
 class PowerManager
 {
 public:
@@ -27,7 +29,7 @@ public:
     MODEM_ON_CMUX_ON,
   };
 
-  PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver);
+  PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver, mraa::Uart & uartPort);
 
   PowerManager(const PowerManager &) = delete;
   PowerManager(const PowerManager &&) = delete;
@@ -36,7 +38,6 @@ public:
   static void onPowerIndChange(void * data);
 
   void run();
-
   virtual ~PowerManager();
 
 private:
@@ -60,11 +61,13 @@ private:
     UNDEFINED
   };
 
-  void processStateMachine(Event evType);
-
   Event computeEvent();
 
+  void processIncomingEvent(Event evType);
+
   void determineInitialConditions();
+
+  void waitForIncomingRequest();
 
   HistoricalValue<DeviceState> itsDeviceState{DeviceState::UNDEFINED};
 
@@ -77,7 +80,8 @@ private:
 
 
   std::condition_variable itsCondVariable;
-  std::mutex itsLockingMutex;
+  std::mutex eventMutex;
+  std::mutex processingMutex;
 
 };
 

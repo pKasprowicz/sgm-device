@@ -14,7 +14,8 @@ public:
 
   enum class Result
   {
-    OK,
+    OK_RAW,
+    OK_CMUX, //reserved for future use
     NOK,
   };
 

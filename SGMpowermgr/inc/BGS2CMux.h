@@ -31,6 +31,8 @@ private:
   int get_major(const char *driver);
   int make_nodes(int major, const char *basename, int number_nodes);
   void remove_nodes(const char *basename, int number_nodes);
+
+  void performEarlyCleanup();
 };
 
 #endif /* BGS2CMUX_H_ */

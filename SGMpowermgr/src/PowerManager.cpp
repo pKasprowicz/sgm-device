@@ -20,7 +20,7 @@ void PowerManager::onPowerIndChange(void * data)
   SGM_LOG_DEBUG("PowerManager::onPowerIndChange() : power state changed event triggered");
 
   {
-    std::unique_lock<std::mutex> eventLock(instance.itsLockingMutex);
+    std::unique_lock<std::mutex> eventLock(instance.eventMutex);
 
     instance.storedPowerState.set(currentPowerState);
 
@@ -35,8 +35,8 @@ void PowerManager::onPowerIndChange(void * data)
 
 }
 
-PowerManager::PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver) :
-    itsModemQuery(),
+PowerManager::PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver, mraa::Uart & uartPort) :
+    itsModemQuery(uartPort),
     itsSharedMemory(sharedMem),
     itsPowerController(sharedMem, itsModemQuery, std::bind(&PowerManager::onPowerIndChange, this)),
     itsModemCMux(cMuxDriver)
@@ -50,17 +50,26 @@ void PowerManager::run()
 
   determineInitialConditions();
 
-  SGM_LOG_DEBUG("PowerManager::run() : turning modem on");
-
+  SGM_LOG_INFO("PowerManager initialized, turning modem on...")
   itsPowerController.turnOn();
+
+  std::thread([this]()
+      {
+        waitForIncomingRequest();
+      });
+
+  SGM_LOG_INFO("Monitoring of incoming requests started");
+
 
   while(true)
   {
-    std::unique_lock<std::mutex> lock(itsLockingMutex);
+    std::unique_lock<std::mutex> lock(eventMutex);
     itsCondVariable.wait(lock);
 
-
-    processStateMachine(computeEvent());
+    {
+      std::lock_guard<std::mutex> processingGuard(processingMutex);
+      processIncomingEvent(computeEvent());
+    }
 
   }
 
@@ -71,7 +80,7 @@ PowerManager::~PowerManager()
 {
 }
 
-void PowerManager::processStateMachine(Event evType)
+void PowerManager::processIncomingEvent(Event evType)
 {
   SGM_LOG_DEBUG("PowerManager::processStateMachine() : event tick");
 
@@ -185,4 +194,8 @@ void PowerManager::determineInitialConditions()
     default:
       break;
   }
+}
+
+void PowerManager::waitForIncomingRequest()
+{
 }

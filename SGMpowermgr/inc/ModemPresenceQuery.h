@@ -10,14 +10,27 @@
 
 #include "IModemQuery.h"
 
+#include "AtCommand.h"
+#include <IAtCommand.h>
+#include "bgs2/PlainAtInterpreter.h"
+#include "bgs2/at/At.h"
+
+#include <mraa/uart.hpp>
+
 class ModemPresenceQuery : public IModemQuery
 {
 public:
 
-  ModemPresenceQuery();
+  ModemPresenceQuery(mraa::Uart & uartPort);
   virtual ~ModemPresenceQuery();
 
   virtual Result run();
+
+private:
+  AtCommand<bgs2::PlainAtInterpreter, bgs2::At>commandAT;
+  mraa::Uart & itsUartPort;
+
+  bool isCmuxPotentiallyActive();
 };
 
 #endif /* MODEMPRESENCEQUERY_H_ */

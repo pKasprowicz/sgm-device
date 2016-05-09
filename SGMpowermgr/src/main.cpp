@@ -26,7 +26,7 @@ class ModemQueryMock : public IModemQuery
 public:
   virtual Result run()
   {
-    return Result::OK;
+    return Result::OK_RAW;
   }
 
   virtual ~ModemQueryMock()
@@ -35,18 +35,17 @@ public:
   }
 };
 
-void isr_mock(void * data)
-{
-  int * value = reinterpret_cast<int *>(data);
-
-  SGM_LOG_DEBUG("Executed custom power pin isr with parameter: %d", *value);
-}
-
 int main() {
 
   mraa_init();
 
   BGS2CMux cMuxDriver;
+
+  mraa::Uart uart1(0);
+  uart1.setBaudRate(57600);
+  uart1.setMode(8, mraa::UART_PARITY_NONE, 1);
+  uart1.setFlowcontrol(false, true);
+  uart1.setTimeout(10, 10, 10);
 
   SharedMemory sharedMem;
   if (SharedMemory::Result::INIT_ERROR == sharedMem.init())
@@ -55,8 +54,7 @@ int main() {
     return -1;
   }
 
-  PowerManager powerManager(sharedMem, cMuxDriver);
-  ModemQueryMock queryMock;
+  PowerManager powerManager(sharedMem, cMuxDriver, uart1);
 
 
   powerManager.run();

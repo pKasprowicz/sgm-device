@@ -87,7 +87,7 @@ void ModemPowerController::stabilizePowerState()
 
     SGM_LOG_DEBUG("ModemPowerController::stabilizePowerState() : MODEM_IND_POWER_ON");
 
-    if (IModemQuery::Result::OK == modemQueryResult)
+    if (IModemQuery::Result::OK_RAW == modemQueryResult)
     {
       itsPowerState = PowerState::ENABLED;
       modemEnablePin.write(MODEM_LINE_IDLE);

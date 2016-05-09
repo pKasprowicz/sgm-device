@@ -129,6 +129,8 @@ ICMuxDriver::Result BGS2CMux::cMuxOn()
   struct gsm_config gsm;
   char atcommand[40];
 
+  performEarlyCleanup();
+
   /* print global parameters */
   SGM_LOG_INFO("SERIAL_PORT = %s", SERIAL_PORT);
 
@@ -391,4 +393,13 @@ void BGS2CMux::remove_nodes(const char* basename, int number_nodes)
     }
   }
 
+}
+
+void BGS2CMux::performEarlyCleanup()
+{
+  if (0 == access("/dev/ttyGSM1", F_OK))
+  {
+    SGM_LOG_INFO("Early initialization detected existing CMUX devices. Removing...");
+    remove_nodes(BASENAME_NODES, NUM_NODES);
+  }
 }
