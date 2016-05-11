@@ -1,7 +1,3 @@
-#ifdef __cplusplus
-extern "C"{
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,56 +6,35 @@ extern "C"{
 #include <sys/socket.h>
 #include <sys/un.h>
 #include<time.h>
-#include<pthread.h>
+#include <csignal>
 
-#ifdef __cplusplus
-}
-#endif
+void sig_handler(int sig);
 
-#include <SharedMemory.h>
-
-#ifdef __cplusplus
-extern "C"{
-#endif
-
-static pthread_t thread1, thread2;
-
-#ifdef __cplusplus
-}
-#endif
-
-extern "C" void * receive_thread(void * args)
+int main()
 {
 
-}
-
-
-extern "C" void sig_handler(int sig);
-
-int main() {
-
-        signal(SIGHUP, sig_handler);
-        signal(SIGTERM, sig_handler);
-        sd_journal_print(LOG_INFO, "SGMdatasink service started!");
-        pthread_create(&thread1, NULL, receive_thread, NULL);
-        pthread_join(thread1, NULL);
+  std::signal(SIGHUP, sig_handler);
+  std::signal(SIGTERM, sig_handler);
+  sd_journal_print(LOG_INFO, "SGMdatasink service started!");
 
 }
 
 void sig_handler(int sig) {
-        switch (sig) {
-        case SIGHUP:
-                sd_journal_print(LOG_INFO, "Received SIGHUP\n");
-                abort();
-                break;
-        case SIGTERM:
-                sd_journal_print(LOG_INFO, "Received SIGTERM\n");
-                abort();
-                break;
-        default:
-                sd_journal_print(LOG_INFO, "wasn't expecting that!\n");
-                abort();
-                break;
-        }
+
+  switch (sig)
+  {
+  case SIGHUP:
+          sd_journal_print(LOG_INFO, "Received SIGHUP\n");
+          abort();
+          break;
+  case SIGTERM:
+          sd_journal_print(LOG_INFO, "Received SIGTERM\n");
+          abort();
+          break;
+  default:
+          sd_journal_print(LOG_INFO, "wasn't expecting that!\n");
+          abort();
+          break;
+  }
 }
 

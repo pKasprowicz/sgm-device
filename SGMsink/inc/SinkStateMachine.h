@@ -16,7 +16,9 @@ class SinkStateMachine
 
       void tick();
 
-      enum class SinkState_t
+      void operator() ();
+
+      enum class SinkState
       {
         NO_CONNECTION,
         MODEM_PRESENT,
@@ -29,6 +31,8 @@ class SinkStateMachine
       };
 
     private:
+
+      SinkState itsCurrentState;
 
   };
 

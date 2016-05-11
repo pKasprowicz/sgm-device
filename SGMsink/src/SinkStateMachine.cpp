@@ -19,5 +19,37 @@ SinkStateMachine::~SinkStateMachine()
 
 void SinkStateMachine::tick ()
 {
+  switch(itsCurrentState)
+  {
+    case SinkState::ACTIVE:
+      break;
 
+    case SinkState::CONN_ESTABLISHED:
+      break;
+
+    case SinkState::ERROR_PPP:
+      break;
+
+    case SinkState::ERROR_TCPIP:
+      break;
+
+    case SinkState::IDLE:
+      break;
+
+    case SinkState::MODEM_PRESENT:
+      break;
+
+      /*
+       * Initial state of the SinkSM
+       */
+    case SinkState::NO_CONNECTION:
+      break;
+
+    case SinkState::RESTART_REQUESTED:
+      break;
+  }
+}
+
+void SinkStateMachine::operator ()()
+{
 }

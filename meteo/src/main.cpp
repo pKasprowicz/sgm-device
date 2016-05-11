@@ -67,36 +67,37 @@ int main() {
 //	unsigned int txBytes = send(s, message, sizeof(message), 0U);
 //	printf("Sent %d bytes\n", txBytes);
 
-	mraa::Uart uart1(0);
-	uart1.setBaudRate(57600);
-	uart1.setMode(8, mraa::UART_PARITY_NONE, 1);
-	uart1.setFlowcontrol(false, true);
-	uart1.setTimeout(10, 10, 10);
+//	mraa::Uart uart1(0);
+//	uart1.setBaudRate(57600);
+//	uart1.setMode(8, mraa::UART_PARITY_NONE, 1);
+//	uart1.setFlowcontrol(false, true);
+//	uart1.setTimeout(10, 10, 10);
+//
+//	AtCommand<bgs2::PlainAtInterpreter, bgs2::At>commandAT;
+//
+//	IAtCommand & atc = commandAT;
+//	IAtCommand::Result res = atc.sendAt(uart1, IAtCommand::CommandType::AT_EXECUTE, 100);
+//
+//	std::unique_ptr<AtGenericResponse> resp = commandAT.getResponse();
+//
+//	if (resp->getReturnCode() != AtGenericResponse::ReturnCode::OK)
+//	{
+//	  return -1;
+//	}
+//
+//	AtCommand<bgs2::PlainAtInterpreter, bgs2::Cops> networkCommand(bgs2::Cops{26001});
+//
+//	res = networkCommand.sendAt(uart1, IAtCommand::CommandType::AT_WRITE, 100);
+//
+//	std::unique_ptr<AtGenericResponse> response2 = networkCommand.getResponse();
+//
+//	if (response2->getReturnCode() != AtGenericResponse::ReturnCode::OK)
+//	  {
+//	    return -1;
+//	  }
 
-	AtCommand<bgs2::PlainAtInterpreter, bgs2::At>commandAT;
-
-	IAtCommand & atc = commandAT;
-	IAtCommand::Result res = atc.sendAt(uart1, IAtCommand::CommandType::AT_EXECUTE, 100);
-
-	std::unique_ptr<AtGenericResponse> resp = commandAT.getResponse();
-
-	if (resp->getReturnCode() != AtGenericResponse::ReturnCode::OK)
-	{
-	  return -1;
-	}
-
-	AtCommand<bgs2::PlainAtInterpreter, bgs2::Cops> networkCommand(bgs2::Cops{26001});
-
-	res = networkCommand.sendAt(uart1, IAtCommand::CommandType::AT_WRITE, 100);
-
-	std::unique_ptr<AtGenericResponse> response2 = networkCommand.getResponse();
-
-	if (response2->getReturnCode() != AtGenericResponse::ReturnCode::OK)
-	  {
-	    return -1;
-	  }
-
-
+int retCode = system("pppd");
+SGM_LOG_INFO("RetCode of pppd : %d", retCode);
 
   return 0;
 }
