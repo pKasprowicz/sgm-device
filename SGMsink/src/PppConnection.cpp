@@ -8,9 +8,15 @@
 #include <PppConnection.h>
 
 #include "Logger.h"
+#include "HistoricalValue.h"
 
 #include <stdlib.h>
-PppConnection::PppConnection()
+PppConnection::PppConnection(SharedMemory & sharedMemoryRef) :
+  monitoringThread([this]()
+                    {
+                      powerMonitorThread();
+                    }),
+  itsSharedMemory(sharedMemoryRef)
 {
   callbackList.reserve(InitialCallbacksCount);
 }
@@ -104,6 +110,7 @@ INetworkProvider::NetworkStatus PppConnection::queryStatus()
 
 bool PppConnection::isDeviceAvailable()
 {
+  return itsSharedMemory.getDataInstance().getCmuxReady();
 }
 
 PppConnection::State PppConnection::stateMachineTick(Event ev)
@@ -122,11 +129,13 @@ PppConnection::State PppConnection::stateMachineTick(Event ev)
     {
       itsCurrentState = State::CONNECTED;
       startPowerMonitor();
+      notifyByCallback(INetworkProvider::NetworkStatus::CONNECTED);
     }
     else
     {
       SGM_LOG_ERROR("Could not establish ppp connection");
       itsCurrentState = State::NO_CONNECTION;
+      notifyByCallback(INetworkProvider::NetworkStatus::CONNECTION_ERROR);
     }
 
     break;
@@ -138,20 +147,38 @@ PppConnection::State PppConnection::stateMachineTick(Event ev)
         )
     {
       pausePowerMonitor();
+      itsCurrentState = State::NO_CONNECTION;
+      notifyByCallback(INetworkProvider::NetworkStatus::DISCONNECTED);
     }
     break;
 
   case Event::DEVICE_LOST:
+    SGM_LOG_INFO("PPP connection has been lost");
+    itsPppEndpoint.close();
+    itsCurrentState = State::CONNECTION_LOST;
+    notifyByCallback(INetworkProvider::NetworkStatus::DEVICE_UNAVAILABLE);
     break;
 
   case Event::DEVICE_RESTORED:
+    if(itsPppEndpoint.open())
+    {
+      startPowerMonitor();
+      itsCurrentState = State::CONNECTED;
+      notifyByCallback(INetworkProvider::NetworkStatus::CONNECTED);
+    }
+    else
+    {
+      SGM_LOG_ERROR("Could not establish ppp connection");
+      itsCurrentState = State::NO_CONNECTION;
+      notifyByCallback(INetworkProvider::NetworkStatus::CONNECTION_ERROR);
+    }
     break;
   }
 
   return itsCurrentState;
 }
 
-void PppConnection::notifyByCallback(INetworkProvider::NetworkStatus & status)
+void PppConnection::notifyByCallback(INetworkProvider::NetworkStatus status)
 {
   for (auto callback : callbackList)
   {
@@ -161,12 +188,46 @@ void PppConnection::notifyByCallback(INetworkProvider::NetworkStatus & status)
 
 void PppConnection::startPowerMonitor()
 {
+  std::lock_guard<std::mutex> lock(itsMonitoringMutex);
+  isPowerMonitorOn = true;
 }
 
 void PppConnection::pausePowerMonitor()
 {
+  std::lock_guard<std::mutex> lock(itsMonitoringMutex);
+  isPowerMonitorOn = false;
 }
 
 void PppConnection::powerMonitorThread()
 {
+  std::unique_lock<std::mutex> monitorLock(itsMonitoringMutex);
+  SharedMemory::SharedData sData = itsSharedMemory.getDataInstance();
+
+  HistoricalValue<bool> cmuxReadyFlag(sData.getCmuxReady());
+
+  while(1)
+  {
+    itsMonitoringCondVar.wait_for(monitorLock, std::chrono::seconds(1), [this]()
+                                                                         {
+                                                                           return isPowerMonitorOn;
+                                                                         });
+
+    cmuxReadyFlag.set(sData.getCmuxReady());
+
+    if (cmuxReadyFlag.hasChanged())
+    {
+      switch(cmuxReadyFlag.get())
+      {
+        case false:
+          (void)stateMachineTick(Event::DEVICE_LOST);
+          break;
+
+        case true:
+          (void)stateMachineTick(Event::DEVICE_RESTORED);
+          break;
+      }
+    }
+
+  }
+
 }

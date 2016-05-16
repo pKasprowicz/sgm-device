@@ -11,13 +11,17 @@
 #include "INetworkProvider.h"
 #include "PppEndpoint.h"
 
+#include "SharedMemory.h"
+
 #include <vector>
 #include <mutex>
+#include <condition_variable>
+#include <thread>
 
 class PppConnection :public INetworkProvider
 {
 public:
-  PppConnection();
+  PppConnection(SharedMemory & sharedMemoryRef);
 
   PppConnection(const PppConnection &) = delete;
   PppConnection & operator =(const PppConnection &) = delete;
@@ -67,10 +71,16 @@ private:
 
   std::mutex itsEventMutex;
   std::mutex itsMonitoringMutex;
+  std::condition_variable itsMonitoringCondVar;
+  std::thread monitoringThread;
+
+  SharedMemory & itsSharedMemory;
+
+  bool isPowerMonitorOn = false;
 
   bool isDeviceAvailable();
   State stateMachineTick(Event ev);
-  void notifyByCallback(INetworkProvider::NetworkStatus & status);
+  void notifyByCallback(INetworkProvider::NetworkStatus status);
 
   inline void startPowerMonitor();
   inline void pausePowerMonitor();
