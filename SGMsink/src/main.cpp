@@ -1,6 +1,7 @@
 
 #include "PppConnection.h"
 #include "INetworkProvider.h"
+#include "SgmSink.h"
 
 #include "Logger.h"
 #include "SharedMemory.h"
@@ -32,6 +33,7 @@ int main()
   }
 
   PppConnection pppConn(sharedMem);
+  SgmSink sgmSink;
 
   INetworkProvider::NetworkStatus status = pppConn.connect();
 
@@ -39,6 +41,7 @@ int main()
   {
   case INetworkProvider::NetworkStatus::CONNECTED:
     SGM_LOG_INFO("PPP connection successfully established!");
+    sgmSink();
     break;
 
   default:

@@ -6,7 +6,7 @@
  */
 
 #include "SocketReader.h"
-#include "Logging.h"
+#include "Logger.h"
 
 int  SocketReader::socketFileDescriptor = 0;
 bool SocketReader::isSocketInitialized  = false;
@@ -39,7 +39,7 @@ SocketReader::Result SocketReader::init()
 
     }
 
-    sd_journal_print(LOG_ERR, "Found %d sockets\n", socketsCount);
+//    sd_journal_print(LOG_ERR, "Found %d sockets\n", socketsCount);
     for (socketFileDescriptor = SD_LISTEN_FDS_START;
         socketFileDescriptor < SD_LISTEN_FDS_START + socketsCount; ++socketFileDescriptor)
     {
@@ -49,7 +49,7 @@ SocketReader::Result SocketReader::init()
       }
       if (socketFileDescriptor == (SD_LISTEN_FDS_START + socketsCount - 1))
       {
-        sd_journal_print(LOG_ERR, "No socket found\n");
+//        sd_journal_print(LOG_ERR, "No socket found\n");
         return Result::SOCKET_NOT_FOUND;
       }
     }
@@ -79,11 +79,11 @@ int SocketReader::receive()
         &sockaddr_len);
     if (socketDescriptor < 0U)
     {
-      sd_journal_print(LOG_INFO,
-          "Error during socket connection, restarting daemon\n");
+//      sd_journal_print(LOG_INFO,
+//          "Error during socket connection, restarting daemon\n");
       break;
     }
-    sd_journal_print(LOG_INFO, "Connection accepted\n");
+//    sd_journal_print(LOG_INFO, "Connection accepted\n");
     unsigned int currentRxSize = 0U;
     while ((currentRxSize = recv(socketDescriptor, rxBuffer, sizeof(rxBuffer),
         0U)) > 0U)
@@ -92,9 +92,9 @@ int SocketReader::receive()
     }
     if (0U == currentRxSize)
     {
-      sd_journal_print(LOG_INFO, "Client disconnected\n");
+//      sd_journal_print(LOG_INFO, "Client disconnected\n");
     }
-    sd_journal_print(LOG_INFO, "Received %d bytes\n", rxSize);
+//    sd_journal_print(LOG_INFO, "Received %d bytes\n", rxSize);
 
   }
 

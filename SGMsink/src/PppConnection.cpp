@@ -122,6 +122,7 @@ PppConnection::State PppConnection::stateMachineTick(Event ev)
   case Event::CONNECT_REQUEST:
     if (itsCurrentState != State::NO_CONNECTION)
     {
+      SGM_LOG_WARN("Connection cannot be enabled in state %d", itsCurrentState);
       return itsCurrentState;
     }
 
@@ -130,6 +131,7 @@ PppConnection::State PppConnection::stateMachineTick(Event ev)
       itsCurrentState = State::CONNECTED;
       startPowerMonitor();
       notifyByCallback(INetworkProvider::NetworkStatus::CONNECTED);
+      SGM_LOG_INFO("PPP connection has been established");
     }
     else
     {
@@ -165,6 +167,7 @@ PppConnection::State PppConnection::stateMachineTick(Event ev)
       startPowerMonitor();
       itsCurrentState = State::CONNECTED;
       notifyByCallback(INetworkProvider::NetworkStatus::CONNECTED);
+      SGM_LOG_INFO("PPP connection restored");
     }
     else
     {
@@ -230,4 +233,8 @@ void PppConnection::powerMonitorThread()
 
   }
 
+}
+
+void PppConnection::setupInitialState()
+{
 }

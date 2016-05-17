@@ -5,14 +5,20 @@
  *      Author: pkasprow
  */
 
-#ifndef SINKSTATEMACHINE_H_
-#define SINKSTATEMACHINE_H_
+#ifndef SGMSINK_H_
+#define SGMSINK_H_
 
-class SinkStateMachine
+#include "mqtt/client.h"
+
+#include "Logger.h"
+
+#include <string>
+
+class SgmSink
   {
     public:
-      SinkStateMachine();
-      virtual ~SinkStateMachine();
+      SgmSink();
+      virtual ~SgmSink();
 
       void tick();
 
@@ -32,8 +38,13 @@ class SinkStateMachine
 
     private:
 
+      std::string itsServerURI{"tcp://iot.eclipse.org:1883"};
+      std::string itsClientId{"SGM#1"};
+
+      mqtt::client itsMqttClient;
+
       SinkState itsCurrentState;
 
   };
 
-#endif /* SINKSTATEMACHINE_H_ */
+#endif /* SGMSINK_H_ */

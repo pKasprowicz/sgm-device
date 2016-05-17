@@ -86,6 +86,8 @@ private:
   inline void pausePowerMonitor();
 
   void powerMonitorThread();
+
+  void setupInitialState();
 };
 
 #endif /* PPPCONNECTION_H_ */

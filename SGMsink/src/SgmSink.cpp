@@ -5,19 +5,22 @@
  *      Author: pkasprow
  */
 
-#include "SinkStateMachine.h"
+#include "SgmSink.h"
 
-SinkStateMachine::SinkStateMachine()
-{	// TODO Auto-generated constructor stub
+#include <stdlib.h>
+
+SgmSink::SgmSink() :
+itsMqttClient(itsServerURI, itsClientId)
+{
 
 }
 
-SinkStateMachine::~SinkStateMachine()
+SgmSink::~SgmSink()
 {
 	// TODO Auto-generated destructor stub
 }
 
-void SinkStateMachine::tick ()
+void SgmSink::tick()
 {
   switch(itsCurrentState)
   {
@@ -50,6 +53,17 @@ void SinkStateMachine::tick ()
   }
 }
 
-void SinkStateMachine::operator ()()
+void SgmSink::operator ()()
 {
+  const char message[] = "SGMmessage";
+  std::string topic{"SGMtopic"};
+
+  itsMqttClient.connect();
+  if (!itsMqttClient.is_connected())
+  {
+    SGM_LOG_ERROR("Could not connect to MQTT server. Stopping");
+    exit(-1);
+  }
+  itsMqttClient.publish(topic, message, sizeof(message), 1, false);
+  itsMqttClient.disconnect();
 }
