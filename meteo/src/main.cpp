@@ -96,8 +96,5 @@ int main() {
 //	    return -1;
 //	  }
 
-int retCode = system("pppd");
-SGM_LOG_INFO("RetCode of pppd : %d", retCode);
-
   return 0;
 }

@@ -8,16 +8,20 @@
 #ifndef SGMSINK_H_
 #define SGMSINK_H_
 
-#include "mqtt/client.h"
+
+#include "PppConnection.h"
 
 #include "Logger.h"
+#include "IServiceSocket.h"
+
+#include "mqtt/client.h"
 
 #include <string>
 
 class SgmSink
   {
     public:
-      SgmSink();
+      SgmSink(mqtt::client & mqttClientRef, PppConnection & pppConnRef);
       virtual ~SgmSink();
 
       void tick();
@@ -27,23 +31,21 @@ class SgmSink
       enum class SinkState
       {
         NO_CONNECTION,
-        MODEM_PRESENT,
-        CONN_ESTABLISHED,
-        ACTIVE,
-        IDLE,
-        ERROR_TCPIP,
-        ERROR_PPP,
-        RESTART_REQUESTED
+        CONNECTED,
+        LISTENING_CONNECTED,
+        LISTENING_DISCONNECTED
       };
 
     private:
 
-      std::string itsServerURI{"tcp://iot.eclipse.org:1883"};
-      std::string itsClientId{"SGM#1"};
+      void processMessageQueue();
 
-      mqtt::client itsMqttClient;
+      static const uint32_t ReconnectTimeout;
 
       SinkState itsCurrentState;
+
+      mqtt::client & itsMqttClient;
+      PppConnection & itsPppConnection;
 
   };
 

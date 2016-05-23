@@ -18,6 +18,9 @@
 
 void sig_handler(int sig);
 
+std::string sinkServerURI{"tcp://iot.eclipse.org:1883"};
+std::string sinkClientId{"SGM#1"};
+
 int main()
 {
 
@@ -32,21 +35,10 @@ int main()
     return -1;
   }
 
+  mqtt::client mqttClient(sinkServerURI, sinkClientId);
   PppConnection pppConn(sharedMem);
-  SgmSink sgmSink;
+  SgmSink sgmSink(mqttClient, pppConn);
 
-  INetworkProvider::NetworkStatus status = pppConn.connect();
-
-  switch (status)
-  {
-  case INetworkProvider::NetworkStatus::CONNECTED:
-    SGM_LOG_INFO("PPP connection successfully established!");
-    sgmSink();
-    break;
-
-  default:
-    break;
-  }
 
   while(1);
 
