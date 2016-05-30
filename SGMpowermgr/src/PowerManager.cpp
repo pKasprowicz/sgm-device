@@ -53,10 +53,17 @@ void PowerManager::run()
   SGM_LOG_INFO("PowerManager initialized, turning modem on...")
   itsPowerController.turnOn();
 
-  std::thread([this]()
-      {
-        waitForIncomingRequest();
-      });
+//  try
+//  {
+//    std::thread([this]()
+//    {
+//      waitForIncomingRequest();
+//    });
+//  }
+//  catch(std::exception & ex)
+//  {
+//    SGM_LOG_FATAL("Error when starting request waiting thread");
+//  }
 
   SGM_LOG_INFO("Monitoring of incoming requests started");
 
@@ -93,6 +100,7 @@ void PowerManager::processIncomingEvent(Event evType)
     sData.setCmuxReady(false);
     sData.endAccess();
     itsModemCMux.turnOff();
+    itsDeviceState.set(DeviceState::MODEM_OFF);
     break;
 
   case Event::ASYNC_TURN_ON:

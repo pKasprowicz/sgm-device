@@ -111,10 +111,10 @@ void ModemPowerController::stabilizePowerState()
       sharedData.setModemReady(false);
       sharedData.endAccess();
 
-      modemPowerSetPin.write(MODEM_IND_POWER_OFF);
+      modemPowerSetPin.write(MODEM_POWER_OFF);
       modemEnablePin.write(MODEM_LINE_IDLE);
       sleep(1);
-      modemPowerSetPin.write(MODEM_IND_POWER_OFF);
+      modemPowerSetPin.write(MODEM_POWER_ON);
       itsPowerState = PowerState::DISABLED_UNPOWERED;
       SGM_LOG_INFO("Modem brought back to clean off state");
       return;

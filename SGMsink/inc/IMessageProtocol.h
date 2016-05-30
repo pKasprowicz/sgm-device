@@ -21,6 +21,7 @@ public:
     MESSAGE_SENT,
     ERROR_PROTOCOL,
     ERROR_SOCKET,
+    ERROR_DATA_INVALID,
     ERROR_UNKNOWN
   };
 
@@ -29,7 +30,11 @@ public:
 
   }
 
-  virtual Result sendMessage(SgmDataType & dataToSend) = 0;
+  virtual Result sendMessage(sgm::SgmProcessData & dataToSend) = 0;
+
+  virtual bool connect() = 0;
+
+  virtual bool disconnect() = 0;
 
   virtual void onNetworkStatusChange(INetworkProvider::NetworkStatus status) = 0;
 

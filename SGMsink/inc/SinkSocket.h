@@ -13,9 +13,10 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 #include <systemd/sd-daemon.h>
+#include "unistd.h"
 
 #include <stdexcept>
-
+#include <cstring>
 
 template<typename PacketClass> class SinkSocket
 {
@@ -32,38 +33,40 @@ private:
 
   uint8_t rxBuffer[2 * sizeof(PacketClass)];
 
-  struct sockaddr_un remoteSocket;
-  int socketFileDescriptor{-1};
+  struct sockaddr_un itsSocketAddress;
+  size_t itsSocketAddressLength;
   int socketDescriptor{-1};
+  int acceptedSocketDescriptor{-1};
 
 };
 
 template<typename PacketClass> SinkSocket<PacketClass>::~SinkSocket()
 {
-
+  SGM_LOG_DEBUG("Closing socket %d", acceptedSocketDescriptor);
+  close(acceptedSocketDescriptor);
 }
 
 template<typename PacketClass>
 int SinkSocket<PacketClass>::receive(PacketClass * rxPacket) throw ()
 {
-  auto socketAddressLength = sizeof(struct sockaddr_un);
-  socketDescriptor = accept(socketFileDescriptor, reinterpret_cast<sockaddr *>(&remoteSocket), &socketAddressLength);
 
   if (socketDescriptor < 0U)
   {
          SGM_LOG_ERROR("Error during socket connection, restarting daemon");
          throw std::runtime_error("Error during socket accept() call");
   }
-  SGM_LOG_INFO("Connection accepted");
 
-  unsigned int rxSize = 0U;
-  rxSize = recv(socketDescriptor, rxBuffer, sizeof(rxBuffer), 0U);
+  int rxSize = 0U;
+  rxSize = recv(acceptedSocketDescriptor, rxBuffer, sizeof(rxBuffer), 0U);
+
+  if (rxSize < 0)
+  {
+    SGM_LOG_ERROR("Unable to receive packet : error %d", errno);
+  }
 
   translateByteStreamToStructure(rxPacket);
 
-  SGM_LOG_DEBUG("Received %d bytes\n", rxSize);
-
-
+  SGM_LOG_DEBUG("SinkSocket<PacketClass>::receive() : Received %d bytes\n", rxSize);
 
   return rxSize;
 }
@@ -71,40 +74,51 @@ int SinkSocket<PacketClass>::receive(PacketClass * rxPacket) throw ()
 template<typename PacketClass>
 SinkSocket<PacketClass>::SinkSocket() throw (std::runtime_error)
 {
+  int socketsCount = 0;
+  while ((socketsCount = sd_listen_fds(0)) == 0)
   {
-    int socketsCount = 0;
-    while ((socketsCount = sd_listen_fds(0)) == 0)
-    {
 
-    }
-    SGM_LOG_DEBUG("Found %d sockets\n", socketsCount);
-    for (socketFileDescriptor = SD_LISTEN_FDS_START; socketFileDescriptor < SD_LISTEN_FDS_START + socketsCount; ++socketFileDescriptor)
+  }
+  SGM_LOG_DEBUG("Found %d sockets\n", socketsCount);
+  for (socketDescriptor = SD_LISTEN_FDS_START; socketDescriptor < SD_LISTEN_FDS_START + socketsCount; ++socketDescriptor)
+  {
+    if (sd_is_socket_unix(socketDescriptor, SOCK_SEQPACKET, -1, NULL, 0))
     {
-      if (sd_is_socket_unix(socketFileDescriptor, SOCK_SEQPACKET, -1, NULL, 0))
-      {
-              break;
-      }
-      if(socketFileDescriptor == (SD_LISTEN_FDS_START + socketsCount - 1))
-      {
-              throw std::runtime_error("Could not find socket");
-      }
+      SGM_LOG_DEBUG("SinkSocket<PacketClass>::SinkSocket() : Socket found : %d", socketDescriptor);
+      break;
+    }
+    if(socketDescriptor == (SD_LISTEN_FDS_START + socketsCount - 1))
+    {
+      SGM_LOG_DEBUG("SinkSocket<PacketClass>::SinkSocket() : Could not find socket");
+      throw std::runtime_error("Could not find socket");
     }
   }
 
-  listen(socketFileDescriptor, 3);
+  itsSocketAddressLength = sizeof(itsSocketAddress);
+  acceptedSocketDescriptor = accept(socketDescriptor, reinterpret_cast<struct sockaddr *>(&itsSocketAddress), &itsSocketAddressLength);
+  if (acceptedSocketDescriptor < 0)
+  {
+    SGM_LOG_DEBUG("SinkSocket<PacketClass>::SinkSocket() : Unable to accept connection : error %d", errno);
+    throw std::runtime_error("Connection could not be accepted");
+  }
+  else
+  {
+    SGM_LOG_INFO("Socket connection established; id = %d", acceptedSocketDescriptor);
+  }
 
 }
 
 template<typename PacketClass>
 int SinkSocket<PacketClass>::send() throw ()
 {
-
+  return 0;
 }
 
 template<typename PacketClass>
 void SinkSocket<PacketClass>::translateByteStreamToStructure(
     PacketClass * packet)
 {
+  std::memcpy(packet, rxBuffer, sizeof(PacketClass));
 }
 
 #endif /* SINKSOCKET_H_ */

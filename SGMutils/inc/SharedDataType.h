@@ -20,6 +20,7 @@ struct SGMShared_t
   pthread_mutex_t mutex;
   bool isModemReady;
   bool isCmuxReady;
+  bool isNetworkReady;
 };
 
 #ifdef __cplusplus

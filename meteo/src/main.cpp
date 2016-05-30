@@ -13,17 +13,46 @@
 
 #include <bgs2/at/At.h>
 #include <bgs2/PlainAtInterpreter.h>
-
 #include <bgs2/at/Cops.h>
 #include <bgs2/at/CopsResponse.h>
 #include <bgs2/CopsInterpreter.h>
-
+#include "SGMDataType.h"
+#include "Logger.h"
 
 #include <mraa/uart.hpp>
 
 using namespace std;
 
 #define SOCKET_PATH "/home/root/sgm/sgm.sckt"
+
+void socketTest()
+{
+
+  sgm::SgmProcessData data;
+  data.value = 0xA5A55A5A;
+  data.crc = 0x11223344;
+  data.measPoint = sgm::MeasurementPoint::AIR;
+  data.physQuantityType = sgm::PhysQuantity::TEMPERATURE;
+
+  struct sockaddr_un remote;
+  int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+  int len;
+
+  remote.sun_family = AF_UNIX;
+  strcpy(remote.sun_path, SOCKET_PATH);
+  len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+  int connectResult = connect(s, (struct sockaddr *)&remote, sizeof(remote));
+  if (connectResult == -1)
+  {
+    int cause = errno;
+    perror("connect");
+    exit(1);
+  }
+
+  unsigned int txBytes = send(s, reinterpret_cast<void *>(&data), sizeof(data), 0U);
+  printf("Sent %d bytes\n", txBytes);
+
+}
 
 int main() {
 
@@ -32,40 +61,7 @@ int main() {
 
     SharedMemory::SharedData & sData = sharedMem.getDataInstance();
 
-//    while(1)
-//    {
-//      sData.startAccess();
-//
-//      if (sData.getModemReady())
-//      {
-//        cout << "Flag value true" << endl;
-//      }
-//      else
-//      {
-//        cout << "Flag value false" << endl;
-//      }
-//
-//      sData.endAccess();
-//      sleep(7);
-//    }
-//
-//	const char message[] = "srutu-tutu";
-//
-//	struct sockaddr_un remote;
-//	int s = socket(AF_UNIX, SOCK_SEQPACKET, 0);
-//	int len;
-//
-//	remote.sun_family = AF_UNIX;
-//	strcpy(remote.sun_path, SOCKET_PATH);
-//	len = strlen(remote.sun_path) + sizeof(remote.sun_family);
-//	if (connect(s, (struct sockaddr *)&remote, len) == -1)
-//	{
-//		perror("connect");
-//		exit(1);
-//	}
-
-//	unsigned int txBytes = send(s, message, sizeof(message), 0U);
-//	printf("Sent %d bytes\n", txBytes);
+    socketTest();
 
 //	mraa::Uart uart1(0);
 //	uart1.setBaudRate(57600);

@@ -41,6 +41,9 @@ public:
     void setModemReady(const bool flag);
     bool getModemReady();
 
+    void setNetworkReady(const bool flag);
+    bool getNetworkReady();
+
     void setCmuxReady(const bool flag);
     bool getCmuxReady();
 

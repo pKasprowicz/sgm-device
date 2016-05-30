@@ -13,15 +13,16 @@
 
 #include "Logger.h"
 #include "IServiceSocket.h"
-
-#include "mqtt/client.h"
+#include "IMessageProtocol.h"
+#include "INetworkProvider.h"
+#include "SGMDataType.h"
 
 #include <string>
 
 class SgmSink
   {
     public:
-      SgmSink(mqtt::client & mqttClientRef, PppConnection & pppConnRef);
+      SgmSink(IMessageProtocol & sinkProtoRef, INetworkProvider & pppConnRef);
       virtual ~SgmSink();
 
       void tick();
@@ -36,16 +37,28 @@ class SgmSink
         LISTENING_DISCONNECTED
       };
 
+      struct SendingException : public std::exception
+      {
+
+        const char * what () const throw ()
+        {
+          return "Error when sending data";
+        }
+
+      };
+
     private:
 
-      void processMessageQueue();
+      void processMessageQueue() throw ();
 
       static const uint32_t ReconnectTimeout;
 
       SinkState itsCurrentState;
 
-      mqtt::client & itsMqttClient;
-      PppConnection & itsPppConnection;
+      IMessageProtocol & itsSinkProtocol;
+
+      INetworkProvider & itsPppConnection;
+      sgm::SgmProcessData itsSgmDataPacket;
 
   };
 

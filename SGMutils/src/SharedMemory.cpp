@@ -164,6 +164,18 @@ bool SharedMemory::SharedData::getModemReady()
   return sharedMemory->isModemReady;
 }
 
+
+void SharedMemory::SharedData::setNetworkReady(const bool flag)
+{
+  SGM_LOG_DEBUG("SharedData::setModemReady() : setting modem ready flag to %d", flag);
+  sharedMemory->isNetworkReady = flag;
+}
+
+bool SharedMemory::SharedData::getNetworkReady()
+{
+  return sharedMemory->isNetworkReady;
+}
+
 void SharedMemory::SharedData::setCmuxReady(const bool flag)
 {
   SGM_LOG_DEBUG("SharedData::setCmuxReady() : setting CMUX ready flag to %d", flag);

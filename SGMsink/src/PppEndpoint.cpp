@@ -19,7 +19,7 @@ PppEndpoint::PppEndpoint()
 
 PppEndpoint::~PppEndpoint()
 {
-  // TODO Auto-generated destructor stub
+  close();
 }
 
 bool PppEndpoint::open()
@@ -42,6 +42,7 @@ bool PppEndpoint::open()
 
 bool PppEndpoint::close()
 {
+  SGM_LOG_INFO("Disconnecting PPP connection");
   system("killall pppd");
   return true;
 }
