@@ -25,17 +25,43 @@ class Bme280Sensor : public ISensorDevice
 {
 
 public:
-  Bme280Sensor(mraa::I2c & i2cDriver);
+
+  enum class DeviceAddress
+  {
+    ADDR_77h = 0x77,
+    ADDR_76h = 0x76
+  };
+
+  Bme280Sensor(mraa::I2c & i2cDriver, DeviceAddress address);
   virtual ~Bme280Sensor();
 
   virtual void acquire(std::vector<sgm::PhysQuantity> quantities, std::vector<sgm::SgmProcessData> & data);
+
+  virtual void acquire(std::vector<sgm::SgmProcessData> & data);
+
   virtual std::vector<sgm::PhysQuantity> & queryCapabilities();
 
 private:
 
+  static const uint16_t temperatureDivider;
+
+  static const uint16_t pressureDivider;
+
+  static const uint16_t humidityDivider;
+
+  void measure(sgm::PhysQuantity quantity, std::vector<sgm::SgmProcessData> & data);
+
+  void measurePressure(std::vector<sgm::SgmProcessData> & data);
+
+  void measureTemperature(std::vector<sgm::SgmProcessData> & data);
+
+  void measureHumidity(std::vector<sgm::SgmProcessData> & data);
+
   AdapterBme280 itsBmeAdapter;
 
   bme280_t itsBme280Config;
+
+  std::vector<sgm::PhysQuantity> itsCapabilities{sgm::PhysQuantity::PRESSURE, sgm::PhysQuantity::TEMPERATURE, sgm::PhysQuantity::HUMIDITY};
 
 };
 

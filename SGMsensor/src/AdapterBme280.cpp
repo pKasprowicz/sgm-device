@@ -7,6 +7,7 @@
 
 #include "AdapterBme280.h"
 
+#include <thread>
 #include <cstring>
 
 AdapterBme280 * AdapterBme280::instance{nullptr};
@@ -56,4 +57,9 @@ s8 AdapterBme280::write(u8 devAddress, u8 regAddress, u8* writeBuffer,
   instance->itsI2cDevice.address(devAddress);
 
   return instance->itsI2cDevice.write(buffer, lengthToWrite + 1);
+}
+
+void AdapterBme280::delay(BME280_MDELAY_DATA_TYPE time)
+{
+  std::this_thread::sleep_for(std::chrono::milliseconds(time));
 }

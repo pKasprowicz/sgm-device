@@ -21,6 +21,7 @@ public:
   }
 
   virtual void acquire(std::vector<sgm::PhysQuantity> quantities, std::vector<sgm::SgmProcessData> & data) = 0;
+  virtual void acquire(std::vector<sgm::SgmProcessData> & data) = 0;
   virtual std::vector<sgm::PhysQuantity> & queryCapabilities() = 0;
 
 private:

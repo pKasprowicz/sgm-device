@@ -33,7 +33,8 @@ namespace sgm
   {
     SOIL,
     AIR,
-    DEVICE
+    DEVICE,
+    NONE
   };
 
   static std::map<MeasurementPoint, std::string> measPointStringMap =
@@ -79,11 +80,13 @@ namespace sgm
      *  Unit. Simple, isn't it?
      */
     Unit unit;
-    uint32_t value;
+    int32_t value;
+
+    uint16_t divider;
     /*
      * I don't believe anybody treats that one seriously...
      */
-    uint32_t crc;
+    uint16_t crc;
   };
 
 }
