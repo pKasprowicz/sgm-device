@@ -32,14 +32,28 @@ public:
     ADDR_76h = 0x76
   };
 
-  Bme280Sensor(mraa::I2c & i2cDriver, DeviceAddress address);
+  Bme280Sensor(mraa::I2c & i2cDriver, DeviceAddress address, sgm::MeasurementPoint measPoint);
+
+  Bme280Sensor(const Bme280Sensor &) = delete;
+
+  Bme280Sensor & operator =(const Bme280Sensor &) = delete;
+
   virtual ~Bme280Sensor();
 
-  virtual void acquire(std::vector<sgm::PhysQuantity> quantities, std::vector<sgm::SgmProcessData> & data);
+
+  bool isReady() override;
+
 
   virtual void acquire(std::vector<sgm::SgmProcessData> & data);
 
+  virtual void acquire(std::vector<sgm::PhysQuantity> && quantities, std::vector<sgm::SgmProcessData> & data);
+
+  virtual void acquire(sgm::PhysQuantity & quanty, sgm::SgmProcessData & data) override;
+
+
   virtual std::vector<sgm::PhysQuantity> & queryCapabilities();
+
+  sgm::MeasurementPoint queryMeasurementPoint() override;
 
 private:
 
@@ -51,17 +65,19 @@ private:
 
   void measure(sgm::PhysQuantity quantity, std::vector<sgm::SgmProcessData> & data);
 
-  void measurePressure(std::vector<sgm::SgmProcessData> & data);
+  sgm::SgmProcessData && measurePressure();
 
-  void measureTemperature(std::vector<sgm::SgmProcessData> & data);
+  sgm::SgmProcessData &&  measureTemperature();
 
-  void measureHumidity(std::vector<sgm::SgmProcessData> & data);
+  sgm::SgmProcessData && measureHumidity();
 
   AdapterBme280 itsBmeAdapter;
 
   bme280_t itsBme280Config;
 
   std::vector<sgm::PhysQuantity> itsCapabilities{sgm::PhysQuantity::PRESSURE, sgm::PhysQuantity::TEMPERATURE, sgm::PhysQuantity::HUMIDITY};
+
+  sgm::MeasurementPoint itsMeasurementPoint;
 
 };
 

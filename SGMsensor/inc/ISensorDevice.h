@@ -20,9 +20,14 @@ public:
 
   }
 
-  virtual void acquire(std::vector<sgm::PhysQuantity> quantities, std::vector<sgm::SgmProcessData> & data) = 0;
   virtual void acquire(std::vector<sgm::SgmProcessData> & data) = 0;
+  virtual void acquire(std::vector<sgm::PhysQuantity>  && quantities, std::vector<sgm::SgmProcessData> & data) = 0;
+  virtual void acquire(sgm::PhysQuantity & quantity, sgm::SgmProcessData & data) = 0;
+
+  virtual bool isReady() = 0;
+
   virtual std::vector<sgm::PhysQuantity> & queryCapabilities() = 0;
+  virtual sgm::MeasurementPoint queryMeasurementPoint() = 0;
 
 private:
 };

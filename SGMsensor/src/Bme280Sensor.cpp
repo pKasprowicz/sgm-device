@@ -15,8 +15,9 @@ const uint16_t Bme280Sensor::pressureDivider{100U};
 
 const uint16_t Bme280Sensor::humidityDivider{1024U};
 
-Bme280Sensor::Bme280Sensor(mraa::I2c & i2cDriver, DeviceAddress address) :
-itsBmeAdapter(i2cDriver)
+Bme280Sensor::Bme280Sensor(mraa::I2c & i2cDriver, DeviceAddress address, sgm::MeasurementPoint measPoint) :
+itsBmeAdapter(i2cDriver),
+itsMeasurementPoint(measPoint)
 {
 
   itsBme280Config.bus_read   = &AdapterBme280::read;
@@ -42,13 +43,25 @@ Bme280Sensor::~Bme280Sensor()
   // TODO Auto-generated destructor stub
 }
 
-void Bme280Sensor::acquire(std::vector<sgm::PhysQuantity> quantities,
+void Bme280Sensor::acquire(std::vector<sgm::SgmProcessData> & data)
+{
+  data.push_back(measurePressure());
+  data.push_back(measureTemperature());
+  data.push_back(measureHumidity());
+}
+
+void Bme280Sensor::acquire(std::vector<sgm::PhysQuantity> && quantities,
     std::vector<sgm::SgmProcessData>& data)
 {
   for (auto physQuantity : quantities)
   {
     measure(physQuantity, data);
   }
+}
+
+void Bme280Sensor::acquire(sgm::PhysQuantity& quanty, sgm::SgmProcessData& data)
+{
+  //TODO implement
 }
 
 std::vector<sgm::PhysQuantity>& Bme280Sensor::queryCapabilities()
@@ -62,81 +75,86 @@ void Bme280Sensor::measure(sgm::PhysQuantity quantity,
   switch(quantity)
   {
     case sgm::PhysQuantity::PRESSURE:
-      measurePressure(data);
+      data.push_back(measurePressure());
       break;
 
     case sgm::PhysQuantity::TEMPERATURE:
-      measureTemperature(data);
+      data.push_back(measureTemperature());
       break;
 
     case sgm::PhysQuantity::HUMIDITY:
-      measureHumidity(data);
+      data.push_back(measureHumidity());
       break;
 
     default:
       break;
   }
-
 }
 
-void Bme280Sensor::measurePressure(std::vector<sgm::SgmProcessData>& data)
-{
-}
-
-void Bme280Sensor::measureTemperature(std::vector<sgm::SgmProcessData>& data)
-{
-}
-
-void Bme280Sensor::acquire(std::vector<sgm::SgmProcessData>& data)
+sgm::SgmProcessData && Bme280Sensor::measurePressure()
 {
   signed int pressureUncomp{0U};
-  signed int temperatureUncomp{0U};
-  signed int humidityUncomp{0U};
-
   BME280_RETURN_FUNCTION_TYPE result{0U};
-  bme280_read_uncomp_pressure_temperature_humidity(&pressureUncomp, &temperatureUncomp, &humidityUncomp);
+  result = bme280_read_uncomp_pressure(&pressureUncomp);
 
-  signed int actualTemperature = bme280_compensate_temperature_int32(temperatureUncomp);
-  data.push_back(sgm::SgmProcessData
-      {
-        0U,
-        sgm::MeasurementPoint::NONE,
-        sgm::PhysQuantity::TEMPERATURE,
-        sgm::Unit::Celsius,
-        actualTemperature,
-        temperatureDivider,
-        0U
-      });
   signed int actualPressure = bme280_compensate_pressure_int32(pressureUncomp);
-  data.push_back(sgm::SgmProcessData
-        {
-          0U,
-          sgm::MeasurementPoint::NONE,
-          sgm::PhysQuantity::PRESSURE,
-          sgm::Unit::hPa,
-          actualPressure,
-          pressureDivider,
-          0U
-        });
-
-  signed int actualHumidity = bme280_compensate_humidity_int32(humidityUncomp);
-  data.push_back(sgm::SgmProcessData
-        {
-          0U,
-          sgm::MeasurementPoint::NONE,
-          sgm::PhysQuantity::HUMIDITY,
-          sgm::Unit::Percent,
-          actualHumidity,
-          humidityDivider,
-          0U
-        });
-
-  SGM_LOG_DEBUG("Temperature readout : %4.2f Celsius", actualTemperature / 100.0f);
-  SGM_LOG_DEBUG("Pressure readout    : %4.2f hPa",     actualPressure / 100.0f);
-  SGM_LOG_DEBUG("Humidity readout    : %4.2f percent", (actualHumidity / 1024.0f) );
-
+  return sgm::SgmProcessData
+  {
+    0U,
+    itsMeasurementPoint,
+    sgm::PhysQuantity::PRESSURE,
+    sgm::Unit::hPa,
+    actualPressure,
+    pressureDivider,
+    0U
+  };
 }
 
-void Bme280Sensor::measureHumidity(std::vector<sgm::SgmProcessData>& data)
+sgm::SgmProcessData && Bme280Sensor::measureTemperature()
 {
+  signed int temperatureUncomp{0U};
+  BME280_RETURN_FUNCTION_TYPE result{0U};
+  result = bme280_read_uncomp_temperature(&temperatureUncomp);
+
+  signed int actualTemperature = bme280_compensate_temperature_int32(temperatureUncomp);
+  return sgm::SgmProcessData
+  {
+    0U,
+    itsMeasurementPoint,
+    sgm::PhysQuantity::TEMPERATURE,
+    sgm::Unit::Celsius,
+    actualTemperature,
+    temperatureDivider,
+    0U
+  };
+}
+
+bool Bme280Sensor::isReady()
+{
+
+  return true;
+}
+
+sgm::SgmProcessData &&  Bme280Sensor::measureHumidity()
+{
+  signed int humidityUncomp{0U};
+  BME280_RETURN_FUNCTION_TYPE result{0U};
+  result = bme280_read_uncomp_temperature(&humidityUncomp);
+
+  signed int actualHumidity = bme280_compensate_humidity_int32(humidityUncomp);
+  return sgm::SgmProcessData
+  {
+    0U,
+    itsMeasurementPoint,
+    sgm::PhysQuantity::HUMIDITY,
+    sgm::Unit::Percent,
+    actualHumidity,
+    humidityDivider,
+    0U
+  };
+}
+
+sgm::MeasurementPoint Bme280Sensor::queryMeasurementPoint()
+{
+  return itsMeasurementPoint;
 }

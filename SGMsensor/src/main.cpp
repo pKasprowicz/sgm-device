@@ -1,6 +1,7 @@
 #include "AdapterBme280.h"
 #include "Bme280Sensor.h"
 
+#include "ClientSocket.h"
 #include "SGMDataType.h"
 
 #include "mraa/i2c.hpp"
@@ -15,21 +16,16 @@ using namespace std;
 
 
 int main() {
-  /* Setup your example here, code that should run once
+  /*
+   * Setup your example here, code that should run once
    */
-
+  ClientSocket<sgm::SgmProcessData> socket;
   mraa::I2c i2cDriver(1);
 
-  Bme280Sensor bmeSensor(i2cDriver, Bme280Sensor::DeviceAddress::ADDR_77h);
-
-  std::vector<sgm::SgmProcessData> data;
+  Bme280Sensor bmeSensor(i2cDriver, Bme280Sensor::DeviceAddress::ADDR_77h, sgm::MeasurementPoint::AIR);
 
   while(1)
   {
-
-    std::vector<sgm::SgmProcessData> data;
-    bmeSensor.acquire(data);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
 
   }
 
