@@ -65,11 +65,11 @@ private:
 
   void measure(sgm::PhysQuantity quantity, std::vector<sgm::SgmProcessData> & data);
 
-  sgm::SgmProcessData && measurePressure();
+  sgm::SgmProcessData measurePressure();
 
-  sgm::SgmProcessData &&  measureTemperature();
+  sgm::SgmProcessData measureTemperature();
 
-  sgm::SgmProcessData && measureHumidity();
+  sgm::SgmProcessData measureHumidity();
 
   AdapterBme280 itsBmeAdapter;
 

@@ -42,6 +42,8 @@ private:
 
 
   std::map<IdTuple, ISensorDevice * > itsSensorList;
+
+  std::vector<ISensorDevice *> itsSensorVector;
 };
 
 #endif /* SENSORHUB_H_ */

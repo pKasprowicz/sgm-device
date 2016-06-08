@@ -18,11 +18,11 @@ SensorHub::~SensorHub()
   // TODO Auto-generated destructor stub
 }
 
-void SensorHub::acquireAll(std::vector<sgm::SgmProcessData>& sensorList)
+void SensorHub::acquireAll(std::vector<sgm::SgmProcessData>& measurementData)
 {
-  for (auto sensor : itsSensorList)
+  for (auto sensor : itsSensorVector)
   {
-    sensor.second->acquire(sensorList);
+    sensor->acquire(measurementData);
   }
 }
 
@@ -51,6 +51,8 @@ SensorHub::RegistrationResult SensorHub::registerSensor(ISensorDevice & sensor)
     }
 
   }
+
+  itsSensorVector.push_back(&sensor);
 
   return regResult;
 }

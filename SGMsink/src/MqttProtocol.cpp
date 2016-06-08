@@ -105,6 +105,9 @@ bool MqttProtocol::prepareTopic(sgm::SgmProcessData& data)
 
   bool isMapperFound = false;
 
+  SGM_LOG_DEBUG("MqttProtocol::prepareTopic : %d / %d", data.physQuantityType, data.measPoint);
+  SGM_LOG_DEBUG("MqttProtocol::prepareTopic : %s / %s", sgm::physicalStringMap[data.physQuantityType].c_str(), sgm::measPointStringMap[data.measPoint].c_str());
+
   for (auto & unitMapper : sgm::unitMap)
   {
     if ((unitMapper.first == data.measPoint) && (unitMapper.second == data.physQuantityType))
@@ -123,6 +126,16 @@ bool MqttProtocol::prepareTopic(sgm::SgmProcessData& data)
 
 int MqttProtocol::prepareMessage(sgm::SgmProcessData& data)
 {
-  std::memcpy(itsMesssageBuffer, "Hello world", 11);
-  return 11U;
+  size_t pos = 0U;
+
+  std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.value), sizeof(data.value));
+  pos += sizeof(data.value);
+
+  std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.divider), sizeof(data.divider));
+  pos += sizeof(data.divider);
+
+  std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.unit), sizeof(data.unit));
+  pos += sizeof(data.unit);
+
+  return pos;
 }

@@ -33,7 +33,7 @@ void SensorServiceApplication::run()
 {
   itsSensorHub.registerSensor(itsBmeSensor);
 
-
+  executeAcquisitionRoutine();
 
 }
 
@@ -48,7 +48,12 @@ void SensorServiceApplication::executeAcquisitionRoutine()
     ClientSocket<sgm::SgmProcessData> sinkSocket;
     for (auto measurement : measurementsData)
     {
-      sinkSocket.sendPacket(&measurement);
+      if (sizeof(measurement) > sinkSocket.sendPacket(&measurement))
+      {
+        SGM_LOG_WARN("Possible socket transmission error");
+      }
+
+
     }
   }
   catch(std::runtime_error & ex)

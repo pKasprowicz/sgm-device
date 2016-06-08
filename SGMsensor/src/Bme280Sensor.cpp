@@ -91,14 +91,14 @@ void Bme280Sensor::measure(sgm::PhysQuantity quantity,
   }
 }
 
-sgm::SgmProcessData && Bme280Sensor::measurePressure()
+sgm::SgmProcessData Bme280Sensor::measurePressure()
 {
   signed int pressureUncomp{0U};
   BME280_RETURN_FUNCTION_TYPE result{0U};
   result = bme280_read_uncomp_pressure(&pressureUncomp);
 
   signed int actualPressure = bme280_compensate_pressure_int32(pressureUncomp);
-  return sgm::SgmProcessData
+  return std::move(sgm::SgmProcessData
   {
     0U,
     itsMeasurementPoint,
@@ -107,17 +107,17 @@ sgm::SgmProcessData && Bme280Sensor::measurePressure()
     actualPressure,
     pressureDivider,
     0U
-  };
+  });
 }
 
-sgm::SgmProcessData && Bme280Sensor::measureTemperature()
+sgm::SgmProcessData Bme280Sensor::measureTemperature()
 {
   signed int temperatureUncomp{0U};
   BME280_RETURN_FUNCTION_TYPE result{0U};
   result = bme280_read_uncomp_temperature(&temperatureUncomp);
 
   signed int actualTemperature = bme280_compensate_temperature_int32(temperatureUncomp);
-  return sgm::SgmProcessData
+  return std::move(sgm::SgmProcessData
   {
     0U,
     itsMeasurementPoint,
@@ -126,7 +126,7 @@ sgm::SgmProcessData && Bme280Sensor::measureTemperature()
     actualTemperature,
     temperatureDivider,
     0U
-  };
+  });
 }
 
 bool Bme280Sensor::isReady()
@@ -135,14 +135,14 @@ bool Bme280Sensor::isReady()
   return true;
 }
 
-sgm::SgmProcessData &&  Bme280Sensor::measureHumidity()
+sgm::SgmProcessData Bme280Sensor::measureHumidity()
 {
   signed int humidityUncomp{0U};
   BME280_RETURN_FUNCTION_TYPE result{0U};
   result = bme280_read_uncomp_temperature(&humidityUncomp);
 
   signed int actualHumidity = bme280_compensate_humidity_int32(humidityUncomp);
-  return sgm::SgmProcessData
+  return std::move(sgm::SgmProcessData
   {
     0U,
     itsMeasurementPoint,
@@ -151,7 +151,7 @@ sgm::SgmProcessData &&  Bme280Sensor::measureHumidity()
     actualHumidity,
     humidityDivider,
     0U
-  };
+  });
 }
 
 sgm::MeasurementPoint Bme280Sensor::queryMeasurementPoint()
