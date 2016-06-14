@@ -116,7 +116,7 @@ bool MqttProtocol::prepareTopic(sgm::SgmProcessData& data)
       itsTopicBuffer += sgm::measPointStringMap.at(unitMapper.first);
       itsTopicBuffer += "/";
       itsTopicBuffer += sgm::physicalStringMap.at(unitMapper.second);
-      itsTopicBuffer += "/";
+//      itsTopicBuffer += "/";
       break;
     }
   }
@@ -128,11 +128,16 @@ int MqttProtocol::prepareMessage(sgm::SgmProcessData& data)
 {
   size_t pos = 0U;
 
+
   std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.value), sizeof(data.value));
   pos += sizeof(data.value);
 
+  SGM_LOG_DEBUG("MqttProtocol::prepareMessage : raw value : %d", data.value);
+
   std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.divider), sizeof(data.divider));
   pos += sizeof(data.divider);
+
+  SGM_LOG_DEBUG("MqttProtocol::prepareMessage : divider: %d", data.divider);
 
   std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.unit), sizeof(data.unit));
   pos += sizeof(data.unit);

@@ -9,6 +9,8 @@
 
 #include "Logger.h"
 
+#include <thread>
+
 const uint16_t Bme280Sensor::temperatureDivider{100U};
 
 const uint16_t Bme280Sensor::pressureDivider{100U};
@@ -29,25 +31,33 @@ itsMeasurementPoint(measPoint)
 
   BME280_RETURN_FUNCTION_TYPE result{0U};
 
-  result += bme280_set_power_mode(BME280_NORMAL_MODE);
+  result += bme280_set_soft_rst();
+  result += bme280_set_power_mode(BME280_SLEEP_MODE);
+
   result += bme280_set_oversamp_humidity(BME280_OVERSAMP_1X);
   result += bme280_set_oversamp_pressure(BME280_OVERSAMP_2X);
   result += bme280_set_oversamp_temperature(BME280_OVERSAMP_4X);
 
-  result += bme280_set_standby_durn(BME280_STANDBY_TIME_250_MS);
+  result += bme280_set_standby_durn(BME280_STANDBY_TIME_1_MS);
+
+  result += bme280_set_power_mode(BME280_FORCED_MODE);
+
 }
 
 Bme280Sensor::~Bme280Sensor()
 {
   (void)bme280_set_power_mode(BME280_SLEEP_MODE);
-  // TODO Auto-generated destructor stub
 }
 
 void Bme280Sensor::acquire(std::vector<sgm::SgmProcessData> & data)
 {
-  data.push_back(measurePressure());
-  data.push_back(measureTemperature());
-  data.push_back(measureHumidity());
+//  signed int dummy{0U};
+//
+//  (void)bme280_read_uncomp_pressure_temperature_humidity(&dummy, &dummy, &dummy);
+
+  measure(sgm::PhysQuantity::TEMPERATURE, data);
+  measure(sgm::PhysQuantity::PRESSURE, data);
+  measure(sgm::PhysQuantity::HUMIDITY, data);
 }
 
 void Bme280Sensor::acquire(std::vector<sgm::PhysQuantity> && quantities,
@@ -72,18 +82,25 @@ std::vector<sgm::PhysQuantity>& Bme280Sensor::queryCapabilities()
 void Bme280Sensor::measure(sgm::PhysQuantity quantity,
     std::vector<sgm::SgmProcessData>& data)
 {
+
+  signed int pressureUncomp{0U};
+  signed int temperatureUncomp{0U};
+  signed int humidityUncomp{0U};
+
+  BME280_RETURN_FUNCTION_TYPE result{0U};
+  result = bme280_get_forced_uncomp_pressure_temperature_humidity(&pressureUncomp, &temperatureUncomp, &humidityUncomp);
   switch(quantity)
   {
     case sgm::PhysQuantity::PRESSURE:
-      data.push_back(measurePressure());
+      data.push_back(measurePressure(pressureUncomp));
       break;
 
     case sgm::PhysQuantity::TEMPERATURE:
-      data.push_back(measureTemperature());
+      data.push_back(measureTemperature(temperatureUncomp));
       break;
 
     case sgm::PhysQuantity::HUMIDITY:
-      data.push_back(measureHumidity());
+      data.push_back(measureHumidity(humidityUncomp));
       break;
 
     default:
@@ -91,13 +108,10 @@ void Bme280Sensor::measure(sgm::PhysQuantity quantity,
   }
 }
 
-sgm::SgmProcessData Bme280Sensor::measurePressure()
+sgm::SgmProcessData Bme280Sensor::measurePressure(signed int uncompVal)
 {
-  signed int pressureUncomp{0U};
-  BME280_RETURN_FUNCTION_TYPE result{0U};
-  result = bme280_read_uncomp_pressure(&pressureUncomp);
 
-  signed int actualPressure = bme280_compensate_pressure_int32(pressureUncomp);
+  signed int actualPressure = bme280_compensate_pressure_int32(uncompVal);
   return std::move(sgm::SgmProcessData
   {
     0U,
@@ -110,13 +124,9 @@ sgm::SgmProcessData Bme280Sensor::measurePressure()
   });
 }
 
-sgm::SgmProcessData Bme280Sensor::measureTemperature()
+sgm::SgmProcessData Bme280Sensor::measureTemperature(signed int uncompVal)
 {
-  signed int temperatureUncomp{0U};
-  BME280_RETURN_FUNCTION_TYPE result{0U};
-  result = bme280_read_uncomp_temperature(&temperatureUncomp);
-
-  signed int actualTemperature = bme280_compensate_temperature_int32(temperatureUncomp);
+  signed int actualTemperature = bme280_compensate_temperature_int32(uncompVal);
   return std::move(sgm::SgmProcessData
   {
     0U,
@@ -135,13 +145,9 @@ bool Bme280Sensor::isReady()
   return true;
 }
 
-sgm::SgmProcessData Bme280Sensor::measureHumidity()
+sgm::SgmProcessData Bme280Sensor::measureHumidity(signed int uncompVal)
 {
-  signed int humidityUncomp{0U};
-  BME280_RETURN_FUNCTION_TYPE result{0U};
-  result = bme280_read_uncomp_temperature(&humidityUncomp);
-
-  signed int actualHumidity = bme280_compensate_humidity_int32(humidityUncomp);
+  signed int actualHumidity = bme280_compensate_humidity_int32(uncompVal);
   return std::move(sgm::SgmProcessData
   {
     0U,
