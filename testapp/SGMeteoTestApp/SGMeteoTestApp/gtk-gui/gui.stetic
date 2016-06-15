@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<stetic-interface>
+  <configuration>
+    <images-root-path>..</images-root-path>
+    <target-gtk-version>2.12</target-gtk-version>
+  </configuration>
+  <import>
+    <widget-library name="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
+    <widget-library name="../bin/Debug/SGMeteoTestApp.exe" internal="true" />
+  </import>
+  <widget class="Gtk.Window" id="MainWindow" design-size="485 123">
+    <property name="MemberName" />
+    <property name="Title" translatable="yes">MainWindow</property>
+    <property name="WindowPosition">CenterOnParent</property>
+    <signal name="DeleteEvent" handler="OnDeleteEvent" />
+    <child>
+      <widget class="Gtk.Fixed" id="fixed2">
+        <property name="MemberName" />
+        <property name="HasWindow">False</property>
+        <child>
+          <placeholder />
+        </child>
+        <child>
+          <widget class="Gtk.Label" id="temperatureLabel">
+            <property name="MemberName" />
+            <property name="LabelProp" translatable="yes">Temperature</property>
+          </widget>
+          <packing>
+            <property name="X">15</property>
+            <property name="Y">30</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.Label" id="temperatureValue">
+            <property name="MemberName" />
+            <property name="LabelProp" translatable="yes">temp</property>
+          </widget>
+          <packing>
+            <property name="X">36</property>
+            <property name="Y">50</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.Label" id="pressureLabel">
+            <property name="MemberName" />
+            <property name="LabelProp" translatable="yes">Pressure</property>
+          </widget>
+          <packing>
+            <property name="X">210</property>
+            <property name="Y">30</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.Label" id="pressureValue">
+            <property name="MemberName" />
+            <property name="LabelProp" translatable="yes">press</property>
+          </widget>
+          <packing>
+            <property name="X">221</property>
+            <property name="Y">50</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.Label" id="humidityLabel">
+            <property name="MemberName" />
+            <property name="LabelProp" translatable="yes">Humidity</property>
+          </widget>
+          <packing>
+            <property name="X">401</property>
+            <property name="Y">30</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="Gtk.Label" id="humidityValue">
+            <property name="MemberName" />
+            <property name="LabelProp" translatable="yes">humid</property>
+          </widget>
+          <packing>
+            <property name="X">406</property>
+            <property name="Y">50</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+</stetic-interface>
