@@ -42,7 +42,7 @@ int main()
 
   std::thread sinkThread(sgmSink);
 
-  while(1);
+  sinkThread.join();
 
 }
 

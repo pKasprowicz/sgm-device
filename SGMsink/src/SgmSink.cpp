@@ -17,6 +17,7 @@
 const uint32_t SgmSink::ReconnectTimeout{10U};
 
 SgmSink::SgmSink(IMessageProtocol & sinkProtoRef, INetworkProvider & pppConnRef) :
+  listenIterationsCount{0U},
   itsCurrentState(SinkState::NO_CONNECTION),
   itsSinkProtocol(sinkProtoRef),
   itsPppConnection(pppConnRef)
@@ -68,6 +69,7 @@ void SgmSink::tick()
       else
       {
         SGM_LOG_INFO("Connected to sink protocol!");
+        listenIterationsCount = 0U;
         itsCurrentState = SinkState::LISTENING_CONNECTED;
       }
       break;
@@ -78,7 +80,8 @@ void SgmSink::tick()
       try
       {
         processMessageQueue();
-        std::this_thread::sleep_for(std::chrono::seconds(10U));
+        std::this_thread::sleep_for(std::chrono::seconds(5U));
+        ++listenIterationsCount;
       }
       catch (SendingException & ex)
       {
@@ -87,6 +90,7 @@ void SgmSink::tick()
         SGM_LOG_FATAL("Fatal error when processing messages (socket). Waiting %d seconds for resuming...", ReconnectTimeout);
         std::this_thread::sleep_for(std::chrono::seconds(ReconnectTimeout));
 
+        listenIterationsCount = 0U;
         itsCurrentState = SinkState::NO_CONNECTION;
       }
       catch (std::runtime_error & ex)
@@ -98,6 +102,7 @@ void SgmSink::tick()
 
     case SinkState::LISTENING_DISCONNECTED:
       std::this_thread::sleep_for(std::chrono::seconds(ReconnectTimeout));
+      ++listenIterationsCount;
       break;
 
     default:
@@ -107,10 +112,11 @@ void SgmSink::tick()
 
 void SgmSink::operator ()()
 {
-  while(true)
+  while(listenIterationsCount < MaxListenIterationsCount)
   {
     tick();
   }
+  SGM_LOG_INFO("Idle time exceeded, exiting...");
 }
 
 void SgmSink::processMessageQueue()  throw ()
@@ -138,31 +144,43 @@ void SgmSink::processMessageQueue()  throw ()
     switch(sendingResult)
     {
     case IMessageProtocol::Result::MESSAGE_SENT:
+
       SGM_LOG_INFO("Message sent!");
+
       break;
 
-    case IMessageProtocol::Result::ERROR_DATA_INVALID:
+    case IMessageProtocol::Result::INPUT_DATA_INVALID:
+
       SGM_LOG_ERROR("Data invalid - packet dropped");
+
       break;
 
     case IMessageProtocol::Result::ERROR_SOCKET:
+
       SGM_LOG_ERROR("Error when sending - internal socket error");
       throw SendingException();
+
       break;
 
     case IMessageProtocol::Result::ERROR_PROTOCOL:
+
       SGM_LOG_ERROR("Error on sending message - protocol fault");
-      itsCurrentState = SinkState::LISTENING_DISCONNECTED;
+      throw std::runtime_error();
+
       break;
 
     case IMessageProtocol::Result::ERROR_UNKNOWN:
+
       SGM_LOG_FATAL("Unknown error when sending message");
       throw SendingException();
+
       break;
 
     default:
+
       SGM_LOG_FATAL("Unhandled return code");
       throw SendingException();
+
       break;
     }
   }

@@ -27,36 +27,34 @@ MqttProtocol::~MqttProtocol()
 IMessageProtocol::Result MqttProtocol::sendMessage(sgm::SgmProcessData& dataToSend)
 {
 
-  SGM_LOG_DEBUG("MqttProtocol::sendMessage : send started");
+  auto retVal = IMessageProtocol::Result::MESSAGE_SENT;
+
   if (!prepareTopic(dataToSend))
   {
-    return IMessageProtocol::Result::ERROR_DATA_INVALID;
+    return IMessageProtocol::Result::INPUT_DATA_INVALID;
   }
 
   int messageSize = prepareMessage(dataToSend);
 
   if (messageSize < 0)
   {
-      return IMessageProtocol::Result::ERROR_DATA_INVALID;
+      return IMessageProtocol::Result::INPUT_DATA_INVALID;
   }
 
-  SGM_LOG_DEBUG("Locking mutex...");
   std::unique_lock<std::mutex> lock(itsEventMutex);
-  SGM_LOG_DEBUG("Mutex locked!");
 
   if (isNetworkReady)
   {
-    itsMqttClient.publish(itsTopicBuffer, itsMesssageBuffer, messageSize, 1, false);
+    itsMqttClient.publish(itsTopicBuffer, itsMesssageBuffer, messageSize, 1, true);
   }
   else
   {
     SGM_LOG_WARN("Network unavailable at the moment");
+    retVal = IMessageProtocol::Result::ERROR_PROTOCOL;
   }
-
-  SGM_LOG_DEBUG("Releasing mutex...");
   lock.unlock();
-  SGM_LOG_DEBUG("Mutex released!");
-  return IMessageProtocol::Result::MESSAGE_SENT;
+
+  return retVal;
 }
 
 bool MqttProtocol::disconnect()

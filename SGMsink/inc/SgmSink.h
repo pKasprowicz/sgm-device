@@ -53,6 +53,10 @@ class SgmSink
 
       static const uint32_t ReconnectTimeout;
 
+      static const uint32_t MaxListenIterationsCount{10U};
+
+      uint32_t listenIterationsCount;
+
       SinkState itsCurrentState;
 
       IMessageProtocol & itsSinkProtocol;
