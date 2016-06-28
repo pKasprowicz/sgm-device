@@ -4,5 +4,4 @@ Description= SGM Datasink Service
 [Service]
 Type          = simple
 ExecStart     = /home/root/sgm/SGMsink
-RuntimeMaxSec = 100
 Restart       = always
