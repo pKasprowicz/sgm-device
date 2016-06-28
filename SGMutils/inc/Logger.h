@@ -8,25 +8,39 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 
+
+#ifdef SGM_SERVICE
+
 #include <systemd/sd-journal.h>
-//
-//#define SGM_LOG_INFO(message) sd_journal_print(LOG_INFO, message);
-//
-//#define SGM_LOG_DEBUG(message) sd_journal_print(LOG_DEBUG, __FILE__ message);
+
+#define SGM_LOG_INFO(message, ...)   { sd_journal_print(LOG_INFO, message); }
+
+#define SGM_LOG_WARN(message, ...)   { sd_journal_print(LOG_WARNING, message); }
+
+#define SGM_LOG_ERROR(message, ...)  { sd_journal_print(LOG_ERR, message); }
+
+#define SGM_LOG_DEBUG(message, ...)  { sd_journal_print(LOG_DEBUG, message); }
+
+#define SGM_LOG_FATAL(message, ...)  { sd_journal_print(LOG_CRIT, message); }
+#else
 
 #include "stdio.h"
+
 #define SGM_LOG_INFO(message, ...)   { printf("[LOG_INFO]   " message "\n", ##__VA_ARGS__); \
-                                       sd_journal_print(LOG_INFO, message); }
+                                      }
 
 #define SGM_LOG_WARN(message, ...)   { printf("[LOG_WARN]   " message "\n", ##__VA_ARGS__); \
-                                       sd_journal_print(LOG_WARNING, message); }
+                                      }
 
 #define SGM_LOG_ERROR(message, ...)  { printf("[LOG_ERROR]  " message "\n", ##__VA_ARGS__); \
-                                       sd_journal_print(LOG_ERR, message); }
+                                      }
 
 #define SGM_LOG_DEBUG(message, ...)  { printf("[LOG_DEBUG]  " message "\n", ##__VA_ARGS__); \
-                                       sd_journal_print(LOG_DEBUG, message); }
+                                      }
 
 #define SGM_LOG_FATAL(message, ...)  { printf("[LOG_FATAL]  " message "\n", ##__VA_ARGS__); \
-                                       sd_journal_print(LOG_CRIT, message); }
+                                      }
+
+#endif
+
 #endif /* LOGGER_H_ */

@@ -140,5 +140,8 @@ int MqttProtocol::prepareMessage(sgm::SgmProcessData& data)
   std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.unit), sizeof(data.unit));
   pos += sizeof(data.unit);
 
+  std::memcpy(&itsMesssageBuffer[pos], reinterpret_cast<void *>(&data.timestamp), sizeof(data.timestamp));
+  pos += sizeof(data.timestamp);
+
   return pos;
 }

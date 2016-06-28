@@ -84,7 +84,7 @@ SinkSocket<PacketClass>::SinkSocket() throw (std::runtime_error)
   {
     if (sd_is_socket_unix(socketDescriptor, SOCK_SEQPACKET, -1, NULL, 0))
     {
-      SGM_LOG_DEBUG("SinkSocket<PacketClass>::SinkSocket() : Socket found : %d", socketDescriptor);
+      SGM_LOG_DEBUG("SinkSocket<PacketClass>::SinkSocket() : Socket found, descriptor : %d", socketDescriptor);
       break;
     }
     if(socketDescriptor == (SD_LISTEN_FDS_START + socketsCount - 1))
