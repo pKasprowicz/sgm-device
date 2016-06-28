@@ -101,6 +101,7 @@ void SgmSink::tick()
       break;
 
     case SinkState::LISTENING_DISCONNECTED:
+      //TODO rework the code to utilize this state
       std::this_thread::sleep_for(std::chrono::seconds(ReconnectTimeout));
       ++listenIterationsCount;
       break;
@@ -165,7 +166,7 @@ void SgmSink::processMessageQueue()  throw ()
     case IMessageProtocol::Result::ERROR_PROTOCOL:
 
       SGM_LOG_ERROR("Error on sending message - protocol fault");
-      throw std::runtime_error();
+      throw std::runtime_error("Error on sending message - protocol fault");
 
       break;
 

@@ -9,7 +9,9 @@
 
 #include "Logger.h"
 
+#include <ctime>
 #include <thread>
+
 
 const uint16_t Bme280Sensor::temperatureDivider{100U};
 
@@ -120,6 +122,7 @@ sgm::SgmProcessData Bme280Sensor::measurePressure(signed int uncompVal)
     sgm::Unit::hPa,
     actualPressure,
     pressureDivider,
+    std::time(nullptr),
     0U
   });
 }
@@ -135,6 +138,7 @@ sgm::SgmProcessData Bme280Sensor::measureTemperature(signed int uncompVal)
     sgm::Unit::Celsius,
     actualTemperature,
     temperatureDivider,
+    std::time(nullptr),
     0U
   });
 }
@@ -156,6 +160,7 @@ sgm::SgmProcessData Bme280Sensor::measureHumidity(signed int uncompVal)
     sgm::Unit::Percent,
     actualHumidity,
     humidityDivider,
+    std::time(nullptr),
     0U
   });
 }

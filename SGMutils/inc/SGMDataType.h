@@ -83,6 +83,8 @@ namespace sgm
     int32_t value;
 
     uint16_t divider;
+
+    uint32_t timestamp;
     /*
      * I don't believe anybody treats that one seriously...
      */
