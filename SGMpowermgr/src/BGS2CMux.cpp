@@ -132,13 +132,13 @@ ICMuxDriver::Result BGS2CMux::cMuxOn()
   performEarlyCleanup();
 
   /* print global parameters */
-  SGM_LOG_INFO("SERIAL_PORT = %s", SERIAL_PORT);
+  SGM_LOG_INFO("SERIAL_PORT = "SERIAL_PORT);
 
   /* open the serial port */
   serial_fd = open(SERIAL_PORT, O_RDWR | O_NOCTTY | O_NDELAY);
   if (serial_fd == -1)
   {
-    SGM_LOG_ERROR("Cannot open %s", SERIAL_PORT);
+    SGM_LOG_ERROR("Cannot open "SERIAL_PORT);
     return ICMuxDriver::Result::MUX_ERROR;
   }
 
@@ -178,9 +178,9 @@ ICMuxDriver::Result BGS2CMux::cMuxOn()
   * to fit your modem needs.
   * The following matches Quectel M95.
   */
-  if (send_at_command(serial_fd, "AT\\Q3\r") == -1)
+  if (send_at_command(serial_fd, "AT\\Q3\r\n") == -1)
   {
-    SGM_LOG_ERROR("AT\\Q3\r: bad response");
+    SGM_LOG_ERROR("AT\\Q3\\r\\n: bad response");
     return ICMuxDriver::Result::MUX_ERROR;
   }
   //  if (send_at_command(serial_fd, "AT+GMM\r") == -1)
@@ -257,6 +257,8 @@ int BGS2CMux::send_at_command(int serial_fd, const char* command)
   char buf[SIZE_BUF];
     int r;
 
+    tcflush(serial_fd,TCIFLUSH);
+
     /* write the AT command to the serial line */
     if (write(serial_fd, command, strlen(command)) <= 0)
       SGM_LOG_ERROR("Cannot write to %s", SERIAL_PORT);
@@ -285,7 +287,6 @@ int BGS2CMux::send_at_command(int serial_fd, const char* command)
         if (bufp[i] == '\r' || bufp[i] == '\n')
           bufp[i] = ' ';
       }
-      SGM_LOG_DEBUG("%s : %s", command, bufp);
     }
 
     /* if the output shows "OK" return success */

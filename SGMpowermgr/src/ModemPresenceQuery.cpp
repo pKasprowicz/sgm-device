@@ -12,7 +12,8 @@
 #include <unistd.h>
 
 ModemPresenceQuery::ModemPresenceQuery(mraa::Uart & uartPort)
-: itsUartPort(itsUartPort)
+: commandAT(),
+  itsUartPort(uartPort)
 {
   // TODO Auto-generated constructor stub
 

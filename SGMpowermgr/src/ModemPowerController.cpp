@@ -83,6 +83,7 @@ void ModemPowerController::stabilizePowerState()
   switch (modemPowerIndication)
   {
   case MODEM_IND_POWER_ON:
+    //TODO what if modem is in CMUX?
     modemQueryResult = itsModemStatusQuery.run();
 
     SGM_LOG_DEBUG("ModemPowerController::stabilizePowerState() : MODEM_IND_POWER_ON");

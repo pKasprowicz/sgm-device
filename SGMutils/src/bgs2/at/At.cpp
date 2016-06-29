@@ -28,7 +28,7 @@ namespace bgs2
 
       case IAtCommand::CommandType::AT_EXECUTE:
         memcpy(static_cast<void *>(txBuffer), AT_COMMAND"\r\n", sizeof(AT_COMMAND"\r\n") - 1);
-        retVal = sizeof(AT_COMMAND"\n") - 1;
+        retVal = sizeof(AT_COMMAND"\r\n") - 1;
         break;
 
       case IAtCommand::CommandType::AT_READ:

@@ -10,6 +10,8 @@
 #include "Logger.h"
 #include "SGMfixtures.h"
 
+#include "systemd/sd-daemon.h"
+
 #include <thread>
 
 void PowerManager::onPowerIndChange(void * data)
@@ -104,6 +106,8 @@ void PowerManager::processIncomingEvent(Event evType)
     break;
 
   case Event::ASYNC_TURN_ON:
+    SGM_LOG_INFO("Modem turned on, waiting to stabilize...");
+    std::this_thread::sleep_for(std::chrono::seconds(15));
     if (ICMuxDriver::Result::MUX_ON == itsModemCMux.turnOn())
     {
       SGM_LOG_DEBUG("PowerManager::processStateMachine : CMUX turned on");
@@ -111,6 +115,7 @@ void PowerManager::processIncomingEvent(Event evType)
       sData.setCmuxReady(true);
       sData.endAccess();
       itsDeviceState.set(DeviceState::MODEM_CMUX);
+      sd_notify(0, "READY=1");
     }
     else
     {

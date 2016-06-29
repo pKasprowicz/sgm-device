@@ -1,0 +1,11 @@
+[Unit]
+Description= SGM Datasink Service
+
+[Service]
+Type          = notify
+ExecStart     = /home/root/sgm/SGMpowermgr
+Restart       = no
+TimeoutStartSec = 5min
+
+[Install]
+WantedBy = multi-user.target

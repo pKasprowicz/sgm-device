@@ -13,15 +13,15 @@
 
 #include <systemd/sd-journal.h>
 
-#define SGM_LOG_INFO(message, ...)   { sd_journal_print(LOG_INFO, message); }
+#define SGM_LOG_INFO(message, ...)   { sd_journal_print(LOG_INFO, message, ##__VA_ARGS__); }
 
-#define SGM_LOG_WARN(message, ...)   { sd_journal_print(LOG_WARNING, message); }
+#define SGM_LOG_WARN(message, ...)   { sd_journal_print(LOG_WARNING, message, ##__VA_ARGS__); }
 
-#define SGM_LOG_ERROR(message, ...)  { sd_journal_print(LOG_ERR, message); }
+#define SGM_LOG_ERROR(message, ...)  { sd_journal_print(LOG_ERR, message, ##__VA_ARGS__); }
 
-#define SGM_LOG_DEBUG(message, ...)  { sd_journal_print(LOG_DEBUG, message); }
+#define SGM_LOG_DEBUG(message, ...)  { sd_journal_print(LOG_DEBUG, message, ##__VA_ARGS__); }
 
-#define SGM_LOG_FATAL(message, ...)  { sd_journal_print(LOG_CRIT, message); }
+#define SGM_LOG_FATAL(message, ...)  { sd_journal_print(LOG_CRIT, message, ##__VA_ARGS__); }
 #else
 
 #include "stdio.h"
