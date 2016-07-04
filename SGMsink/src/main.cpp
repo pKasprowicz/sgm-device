@@ -16,7 +16,7 @@
 
 void sig_handler(int sig);
 
-std::string sinkServerURI{"tcp://iot.eclipse.org:1883"};
+std::string sinkServerURI{"tcp://51.255.203.130:1883"};
 std::string sinkClientId{"SGM#1"};
 
 int main()

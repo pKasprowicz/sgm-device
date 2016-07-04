@@ -33,7 +33,9 @@ void SensorServiceApplication::run()
 {
   itsSensorHub.registerSensor(itsBmeSensor);
 
+  SGM_LOG_INFO("Starting acquisition routine...");
   executeAcquisitionRoutine();
+  SGM_LOG_INFO("Acquisition routine finished!");
 
 }
 
