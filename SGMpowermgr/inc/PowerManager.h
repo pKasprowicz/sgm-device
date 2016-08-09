@@ -11,6 +11,7 @@
 #include "ICMuxDriver.h"
 
 #include "ModemPowerController.h"
+#include "ShutdownDriver.h"
 
 #include "SharedMemory.h"
 #include "ModemPresenceQuery.h"
@@ -29,7 +30,7 @@ public:
     MODEM_ON_CMUX_ON,
   };
 
-  PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver, mraa::Uart & uartPort);
+  PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver, mraa::Uart & uartPort, ShutdownDriver & shdnDriver);
 
   PowerManager(const PowerManager &) = delete;
   PowerManager(const PowerManager &&) = delete;
@@ -48,7 +49,8 @@ private:
     MODEM_READY,
     MODEM_CMUX,
     MODEM_OFF,
-    MODEM_FAILED
+    MODEM_FAILED,
+    SHUTDOWN
   };
 
   enum class Event
@@ -57,17 +59,21 @@ private:
     REQ_TURN_OFF,
     ASYNC_TURN_ON,
     ASYNC_TURN_OFF,
+    SERVICE_SHUTDOWN,
+    TERMINATE,
     NONE,
     UNDEFINED
   };
 
   Event computeEvent();
 
-  void processIncomingEvent(Event evType);
+  DeviceState processIncomingEvent(Event evType);
 
   void determineInitialConditions();
 
   void waitForIncomingRequest();
+
+  void executeShutdownRoutine();
 
   HistoricalValue<DeviceState> itsDeviceState{DeviceState::UNDEFINED};
 
@@ -77,11 +83,13 @@ private:
   SharedMemory & itsSharedMemory;
   ModemPowerController itsPowerController;
   ICMuxDriver & itsModemCMux;
+  ShutdownDriver & itsShutdownDriver;
 
 
   std::condition_variable itsCondVariable;
   std::mutex eventMutex;
   std::mutex processingMutex;
+  Event itsEventRequest{Event::NONE};
 
 };
 

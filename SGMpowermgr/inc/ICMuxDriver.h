@@ -8,6 +8,8 @@
 #ifndef ICMUXDRIVER_H_
 #define ICMUXDRIVER_H_
 
+#include <mraa/uart.hpp>
+
 class ICMuxDriver
 {
 public:
@@ -26,6 +28,9 @@ public:
 
   virtual Result turnOn()  = 0;
   virtual Result turnOff() = 0;
+
+  virtual mraa::Uart & getCurrentUart() = 0;
+  virtual Result getState() = 0;
 
 
 private:

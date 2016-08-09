@@ -19,6 +19,7 @@ void signalHandler(int signal)
 
 int main() {
 
+
   SensorServiceApplication app;
   SGM_LOG_INFO("Sensor service started!");
 

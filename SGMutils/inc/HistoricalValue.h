@@ -28,6 +28,11 @@ public:
     return testVal == values[0];
   }
 
+  bool was(Contained testVal)
+  {
+    return testVal == values[0];
+  }
+
   void set(Contained newVal)
   {
     values[1] = values[0];

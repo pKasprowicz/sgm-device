@@ -13,6 +13,7 @@
 #include "systemd/sd-daemon.h"
 
 #include <thread>
+#include <signal.h>
 
 void PowerManager::onPowerIndChange(void * data)
 {
@@ -37,17 +38,19 @@ void PowerManager::onPowerIndChange(void * data)
 
 }
 
-PowerManager::PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver, mraa::Uart & uartPort) :
+PowerManager::PowerManager(SharedMemory & sharedMem, ICMuxDriver & cMuxDriver, mraa::Uart & uartPort, ShutdownDriver & shdnDriver) :
     itsModemQuery(uartPort),
     itsSharedMemory(sharedMem),
     itsPowerController(sharedMem, itsModemQuery, std::bind(&PowerManager::onPowerIndChange, this)),
-    itsModemCMux(cMuxDriver)
+    itsModemCMux(cMuxDriver),
+    itsShutdownDriver(shdnDriver)
 {
 
 }
 
 void PowerManager::run()
 {
+
   std::thread powerControllerThread(std::ref(itsPowerController));
 
   determineInitialConditions();
@@ -77,7 +80,10 @@ void PowerManager::run()
 
     {
       std::lock_guard<std::mutex> processingGuard(processingMutex);
-      processIncomingEvent(computeEvent());
+      if (DeviceState::SHUTDOWN == processIncomingEvent(computeEvent()))
+      {
+        break;
+      }
     }
 
   }
@@ -89,7 +95,7 @@ PowerManager::~PowerManager()
 {
 }
 
-void PowerManager::processIncomingEvent(Event evType)
+PowerManager::DeviceState PowerManager::processIncomingEvent(Event evType)
 {
   SGM_LOG_DEBUG("PowerManager::processStateMachine() : event tick");
 
@@ -97,6 +103,16 @@ void PowerManager::processIncomingEvent(Event evType)
 
   switch(evType)
   {
+
+  case Event::SERVICE_SHUTDOWN:
+//    TODO perhaps we need to have some method to deinitialize resources from
+//    lower layer and process shutdown in a way that we call destructors
+    return DeviceState::SHUTDOWN;
+
+  case Event::TERMINATE:
+    (void)itsPowerController.turnOffHw();
+    return DeviceState::SHUTDOWN;
+
   case Event::ASYNC_TURN_OFF:
     sData.startAccess();
     sData.setCmuxReady(false);
@@ -107,7 +123,7 @@ void PowerManager::processIncomingEvent(Event evType)
 
   case Event::ASYNC_TURN_ON:
     SGM_LOG_INFO("Modem turned on, waiting to stabilize...");
-    std::this_thread::sleep_for(std::chrono::seconds(15));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     if (ICMuxDriver::Result::MUX_ON == itsModemCMux.turnOn())
     {
       SGM_LOG_DEBUG("PowerManager::processStateMachine : CMUX turned on");
@@ -134,7 +150,10 @@ void PowerManager::processIncomingEvent(Event evType)
     break;
   }
 
-  SGM_LOG_INFO("Event processed; current device state : %d", itsDeviceState.get());
+  auto retVal = itsDeviceState.get();
+
+  SGM_LOG_INFO("Event processed; current device state : %d", retVal);
+  return retVal;
 
 }
 
@@ -144,12 +163,26 @@ PowerManager::Event PowerManager::computeEvent()
 
   if (!itsDeviceState.hasChanged())
   {
-    return Event::NONE;
+    //TODO detection of request
+    retVal = itsEventRequest;
+    itsEventRequest = Event::NONE;
+    return retVal;
   }
 
   switch(itsDeviceState.get())
   {
   case DeviceState::MODEM_OFF:
+    if (ShutdownDriver::ShutdownState::NORMAL_SHUTDOWN == itsShutdownDriver.getShutdownState())
+    {
+      SGM_LOG_INFO("Shutting down power manager");
+      return Event::SERVICE_SHUTDOWN;
+    }
+    if (ShutdownDriver::ShutdownState::NORMAL_SHUTDOWN == itsShutdownDriver.getShutdownState())
+    {
+      SGM_LOG_FATAL("Unable to perform gentle shutdown, terminating Power Manager");
+      return Event::TERMINATE;
+    }
+
     if (storedPowerState.is(ModemPowerController::PowerState::ENABLED))
     {
       retVal = Event::ASYNC_TURN_ON;
@@ -211,4 +244,9 @@ void PowerManager::determineInitialConditions()
 
 void PowerManager::waitForIncomingRequest()
 {
+}
+
+void PowerManager::executeShutdownRoutine()
+{
+
 }

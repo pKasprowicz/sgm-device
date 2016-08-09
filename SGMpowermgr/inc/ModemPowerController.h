@@ -72,7 +72,7 @@ private:
   std::mutex itsLockingMutex;
   std::condition_variable itsCondVar;
 
-  bool powerStateChanged;
+  bool powerStateChanged{false};
 
   static const int PowerStatusPinNumber   = 45; //GP45
   static const int BatteryStatusPinNumber = 0;

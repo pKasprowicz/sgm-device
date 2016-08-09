@@ -11,19 +11,29 @@
 #include "ICMuxDriver.h"
 #include "Logger.h"
 
+#include <memory>
+
+#include <mraa/uart.hpp>
+
 class BGS2CMux : public ICMuxDriver
 {
+  //TODO rewrite using libmraa UART
 public:
 
-  BGS2CMux();
+  BGS2CMux(mraa::Uart & uartRef);
   virtual ~BGS2CMux();
 
-  virtual ICMuxDriver::Result turnOn();
-  virtual ICMuxDriver::Result turnOff();
+  ICMuxDriver::Result turnOn() override;
+  ICMuxDriver::Result turnOff() override;
+
+  mraa::Uart & getCurrentUart() override;
+  Result getState() override;
 
 private:
 
   int serial_fd{-1};
+  mraa::Uart & itsRawUart;
+  std::unique_ptr<mraa::Uart> itsMuxUart;
 
   ICMuxDriver::Result cMuxOn();
 
@@ -33,6 +43,7 @@ private:
   void remove_nodes(const char *basename, int number_nodes);
 
   void performEarlyCleanup();
+  ICMuxDriver::Result itsCurrentCMuxState{ICMuxDriver::Result::MUX_OFF};
 };
 
 #endif /* BGS2CMUX_H_ */

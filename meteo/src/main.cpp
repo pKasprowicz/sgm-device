@@ -21,6 +21,8 @@
 
 #include <mraa/uart.hpp>
 
+
+#include <fcntl.h>
 using namespace std;
 
 #define SOCKET_PATH "/home/root/sgm/sgm.sckt"
@@ -56,12 +58,12 @@ void socketTest()
 
 int main() {
 
-  SharedMemory sharedMem;
-    sharedMem.init();
-
-    SharedMemory::SharedData & sData = sharedMem.getDataInstance();
-
-    socketTest();
+//  SharedMemory sharedMem;
+//    sharedMem.init();
+//
+//    SharedMemory::SharedData & sData = sharedMem.getDataInstance();
+//
+//    socketTest();
 
 //	mraa::Uart uart1(0);
 //	uart1.setBaudRate(57600);
@@ -91,6 +93,19 @@ int main() {
 //	  {
 //	    return -1;
 //	  }
+
+    system("/home/root/cmux");
+
+    sleep(3);
+
+    int fd = open("/dev/ttyGSM2", O_RDWR | O_NONBLOCK);
+    write(fd, "at^smso\r\n", 9);
+    int err = errno;
+    printf("%d",fd);
+    printf("%d",errno);
+    close(fd);
+
+    system("killall cmux");
 
   return 0;
 }

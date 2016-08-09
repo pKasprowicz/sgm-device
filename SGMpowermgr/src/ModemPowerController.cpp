@@ -39,8 +39,7 @@ ModemPowerController::ModemPowerController(SharedMemory & sharedMem, IModemQuery
   itsModemStatusQuery(powerQuery),
   itsSharedMemory(sharedMem),
   itsPowerState(PowerState::UNDEFINED),
-  itsIsrCallback(isrCallback),
-  powerStateChanged(false)
+  itsIsrCallback(isrCallback)
 {
   battStatusPin.dir(mraa::DIR_IN);
   modemPowerIndPin.dir(mraa::DIR_IN);
@@ -157,8 +156,9 @@ ModemPowerController::PowerState ModemPowerController::turnOffHw(bool keepPower)
 
   std::unique_lock<std::mutex>(itsLockingMutex);
   modemPowerSetPin.write(MODEM_POWER_OFF);
+  modemEnablePin.write(MODEM_LINE_IDLE);
 
-  return PowerState::DISABLED_POWERED;
+  return PowerState::DISABLED_UNPOWERED;
 }
 
 ModemPowerController::PowerState ModemPowerController::resetHw()
@@ -203,6 +203,7 @@ ModemPowerController::PowerState ModemPowerController::resetSoft()
 
 void ModemPowerController::operator ()()
 {
+
   while(1)
   {
     std::unique_lock<std::mutex> lk(itsLockingMutex);

@@ -22,6 +22,8 @@
 #include <unistd.h>
 #include <err.h>
 #include <signal.h>
+
+#include <thread>
 /**
 * gsmmux.h provides n_gsm line dicipline structures and functions.
 * It should be kept in sync with your kernel release.
@@ -87,7 +89,9 @@ void signal_callback_handler(int signum) {
   return;
 }
 
-BGS2CMux::BGS2CMux()
+BGS2CMux::BGS2CMux(mraa::Uart & uartRef)
+: itsRawUart(uartRef),
+  itsMuxUart(nullptr)
 {
   // TODO Auto-generated constructor stub
 
@@ -101,14 +105,22 @@ BGS2CMux::~BGS2CMux()
 BGS2CMux::Result BGS2CMux::turnOn()
 {
   SGM_LOG_DEBUG("ModemCMux::turnOn() : Attempting to turn the CMUX on");
-  if (ICMuxDriver::Result::MUX_ON == cMuxOn())
-  {
-    SGM_LOG_INFO("Modem CMUX has been successfully established!");
-  }
-  else
-  {
-    SGM_LOG_ERROR("Could not establish CMUX connection");
-  }
+//  if (ICMuxDriver::Result::MUX_ON == cMuxOn())
+//  {
+//    itsCurrentCMuxState = ICMuxDriver::Result::MUX_ON;
+//    std::string uartPath("/dev/ttyGSM2");
+//    SGM_LOG_INFO("Modem CMUX has been successfully established!!");
+//  }
+//  else
+//  {
+//    itsCurrentCMuxState = ICMuxDriver::Result::MUX_ERROR;
+//    SGM_LOG_ERROR("Could not establish CMUX connection");
+//  }
+  std::thread t1([this](){
+    cMuxOn();
+  });
+  t1.detach();
+  itsCurrentCMuxState = ICMuxDriver::Result::MUX_ON;
   return ICMuxDriver::Result::MUX_ON;
 }
 
@@ -116,7 +128,8 @@ BGS2CMux::Result BGS2CMux::turnOff()
 {
   SGM_LOG_DEBUG("ModemCMux::turnOff() : Attempting to turn the CMUX off");
   remove_nodes(BASENAME_NODES, NUM_NODES);
-  close(serial_fd);
+//  close(serial_fd);
+  itsCurrentCMuxState = ICMuxDriver::Result::MUX_OFF;
   SGM_LOG_INFO("Modem CMUX is now turned off");
   return BGS2CMux::Result::MUX_OFF;
 }
@@ -132,13 +145,13 @@ ICMuxDriver::Result BGS2CMux::cMuxOn()
   performEarlyCleanup();
 
   /* print global parameters */
-  SGM_LOG_INFO("SERIAL_PORT = "SERIAL_PORT);
+  SGM_LOG_INFO("SERIAL_PORT = " SERIAL_PORT);
 
   /* open the serial port */
   serial_fd = open(SERIAL_PORT, O_RDWR | O_NOCTTY | O_NDELAY);
   if (serial_fd == -1)
   {
-    SGM_LOG_ERROR("Cannot open "SERIAL_PORT);
+    SGM_LOG_ERROR("Cannot open " SERIAL_PORT);
     return ICMuxDriver::Result::MUX_ERROR;
   }
 
@@ -249,6 +262,7 @@ ICMuxDriver::Result BGS2CMux::cMuxOn()
     }
   }
 
+  close(serial_fd);
   return ICMuxDriver::Result::MUX_ON;
 }
 
@@ -394,6 +408,37 @@ void BGS2CMux::remove_nodes(const char* basename, int number_nodes)
     }
   }
 
+}
+
+mraa::Uart & BGS2CMux::getCurrentUart()
+{
+  switch(itsCurrentCMuxState)
+  {
+  case ICMuxDriver::Result::MUX_OFF:
+  case ICMuxDriver::Result::MUX_ERROR:
+      return itsRawUart;
+
+  case ICMuxDriver::Result::MUX_ON:
+    if (itsMuxUart == nullptr)
+    {
+      SGM_LOG_INFO("Opening /dev/ttyGSM2...");
+      try
+      {
+      itsMuxUart = std::unique_ptr<mraa::Uart>(new mraa::Uart("/dev/ttyGSM2"));
+      }
+      catch(std::exception & e)
+      {
+        SGM_LOG_FATAL("Unable to open /dev/ttyGSM2");
+        throw e;
+      }
+    }
+    return *itsMuxUart;
+  }
+}
+
+ICMuxDriver::Result BGS2CMux::getState()
+{
+  return itsCurrentCMuxState;
 }
 
 void BGS2CMux::performEarlyCleanup()
