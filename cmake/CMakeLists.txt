@@ -1,0 +1,17 @@
+set(MQTTPP_BASE_DIR "../../org.eclipse.paho.mqtt.cpp")
+
+set(MQTTPP_SRC "${MQTTPP_BASE_DIR}/src")
+set(MQTTPP_INC "${MQTTPP_SRC}")
+
+aux_source_directory(${MQTTPP_SRC} MQTTPP_SOURCES)
+
+add_library(mqttpp SHARED ${MQTTPP_SOURCES})
+
+include_directories(mqttpp ${MQTTPP_INC})
+
+set_target_properties(mqttpp PROPERTIES
+                                LIBRARY_OUTPUT_DIRECTORY ${SGM_DEPLOY_SHARED_OUTPUT_PATH}
+                                SOVERSION 0
+                                VERSION 1.0.0)
+
+target_link_libraries(mqttpp c stdc++ pthread)
