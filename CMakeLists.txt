@@ -8,10 +8,13 @@ set(CMAKE_CXX_COMPILER ${EDISON_TOOLCHAIN}/usr/bin/i586-poky-linux/i586-poky-lin
 
 set(COMPILER_SYSROOT ${EDISON_SDK}/sysroots/core2-32-poky-linux)
 
-#Deploy directory structure definition
+#############################################
+# Deployment directory structure definition #
+#############################################
 
-set(SGM_DEPLOY_BIN_PATH /root/sgm)
+set(SGM_DEPLOY_BIN_PATH /home/root/sgm)
 set(SGM_DEPLOY_SHARED_PATH /usr/lib)
+set(SGM_DEPLOY_SERVICES_PATH /etc/systemd/system)
 
 set(SGM_DEPLOY_OUTPUT_DIR ${CMAKE_BINARY_DIR}/out/taget)
 
@@ -20,6 +23,11 @@ set(SGM_DEPLOY_LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/out/libs)
 set(SGM_DEPLOY_BINARY_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_BIN_PATH})
 set(SGM_DEPLOY_SHARED_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_SHARED_PATH})
 
+set(SGM_DEPLOY_SERVICES_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_SERVICES_PATH})
+
+###################
+# Project section #
+###################
 
 project(SGMeteo C CXX)
 
