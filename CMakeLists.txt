@@ -16,7 +16,7 @@ set(SGM_DEPLOY_BIN_PATH /home/root/sgm)
 set(SGM_DEPLOY_SHARED_PATH /usr/lib)
 set(SGM_DEPLOY_SERVICES_PATH /etc/systemd/system)
 
-set(SGM_DEPLOY_OUTPUT_DIR ${CMAKE_BINARY_DIR}/out/taget)
+set(SGM_DEPLOY_OUTPUT_DIR ${CMAKE_BINARY_DIR}/out/poky)
 
 
 set(SGM_DEPLOY_LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/out/libs)
@@ -29,7 +29,9 @@ set(SGM_DEPLOY_SERVICES_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_SERVIC
 # Project section #
 ###################
 
-project(SGMeteo C CXX)
+set(PROJECT_NAME SGMeteo)
+
+project(${PROJECT_NAME} C CXX)
 
 #Set the target parameters
 set(CMAKE_SYSTEM_NAME Linux)
@@ -89,3 +91,13 @@ add_subdirectory(./cmake)
 add_subdirectory(./SGMutils)
 add_subdirectory(./SGMsink)
 add_subdirectory(./SGMsensor)
+add_subdirectory(./SGMpowermgr)
+
+add_custom_target(
+    installer
+    ALL
+    COMMAND "makeself" "./out/poky" ./out/install.sh SGMeteo echo "Done"
+    DEPENDS SGMpowermgr mqttpp SGMutils SGMsink SGMsensor
+    WORKING_DIRECTORY ./
+    VERBATIM
+)

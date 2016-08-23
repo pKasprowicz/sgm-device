@@ -1,17 +1,17 @@
 file(GLOB_RECURSE sources ./src *.cpp)
 
-set(BIN_NAME SGMsink)
+set(TARGET_NAME SGMsink)
+
+LIST(APPEND BUILD_TARGETS ${TARGET_NAME})
 
 set(UTILS_HEADERS_PATH ../SGMutils/inc)
 
-add_executable(${BIN_NAME} ${sources})
+add_executable(${TARGET_NAME} ${sources})
 
-include_directories(${BIN_NAME} ./inc ${UTILS_HEADERS_PATH} ${MQTT_HEADERS_PATH})
+include_directories(${TARGET_NAME} ./inc ${UTILS_HEADERS_PATH} ${MQTT_HEADERS_PATH})
 
-set_target_properties(${BIN_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SGM_DEPLOY_BINARY_OUTPUT_PATH})
+set_target_properties(${TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SGM_DEPLOY_BINARY_OUTPUT_PATH})
 
-target_link_libraries(${BIN_NAME} pthread systemd paho-mqtt3as mqttpp rt SGMutils)
+target_link_libraries(${TARGET_NAME} pthread systemd paho-mqtt3as mqttpp rt SGMutils)
 
-file(GLOB SINK_SERVICE_FILES ./${BIN_NAME}.service/*)
-
-file(COPY ${SINK_SERVICE_FILES} DESTINATION  ${SGM_DEPLOY_SERVICES_OUTPUT_PATH})
+file(COPY ./SGMsink.service/SGMsink.service ./SGMsink.service/SGMsink.socket DESTINATION ${SGM_DEPLOY_SERVICES_OUTPUT_PATH})
