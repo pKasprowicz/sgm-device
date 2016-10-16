@@ -1,6 +1,6 @@
-set(BME280_SRC_PATH "${PROJECT_SOURCE_DIR}/3rdparty/BME280_driver")
-
 set(BIN_NAME SGMsensor)
+
+set(BME280_SRC_PATH "${PROJECT_SOURCE_DIR}/3rdparty/BME280_driver")
 
 file(GLOB_RECURSE sensor_sources ./src *.c??)
 set (bme280_sources ${BME280_SRC_PATH}/bme280.c)
