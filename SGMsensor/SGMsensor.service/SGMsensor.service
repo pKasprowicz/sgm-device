@@ -4,3 +4,6 @@ Description = SGM Sensor service
 [Service]
 Type          = simple
 ExecStart     = /home/root/sgm/SGMsensor
+
+[Install]
+WantedBy = multi-user.target

@@ -96,7 +96,7 @@ add_subdirectory(./SGMpowermgr)
 add_custom_target(
     installer
     ALL
-    COMMAND "makeself" "--nocomp" ./out/poky ./out/install.sh SGMeteo echo "Done"
+    COMMAND "makeself" "--nocrc" "--nomd5" ./out/poky ./out/install.sh SGMeteo echo "Done"
     DEPENDS SGMpowermgr mqttpp SGMutils SGMsink SGMsensor
     WORKING_DIRECTORY ./
     VERBATIM
