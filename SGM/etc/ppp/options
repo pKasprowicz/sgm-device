@@ -1,0 +1,9 @@
+name internet
+debug
+/dev/ttyGSM1
+115200
+usepeerdns
+modem
+connect /etc/ppp/net-connect
+#default-asyncmap
+defaultroute

@@ -1,0 +1,8 @@
+ABORT "BUSY"
+ABORT "NO CARRIER"
+ABORT "ERROR"
+""            AT\r
+OK            AT+CGREG?\r
+OK            AT+CGDCONT=1,\"IP\",\"internet\"\r
+OK            ATD*99#\r
+CONNECT ""

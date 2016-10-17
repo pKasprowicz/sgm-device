@@ -92,6 +92,7 @@ add_subdirectory(./SGMutils)
 add_subdirectory(./SGMsink)
 add_subdirectory(./SGMsensor)
 add_subdirectory(./SGMpowermgr)
+add_subdirectory(./SGM)
 
 add_custom_target(
     installer
