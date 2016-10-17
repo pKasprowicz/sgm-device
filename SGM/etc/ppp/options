@@ -4,6 +4,7 @@ debug
 115200
 usepeerdns
 modem
+updetach
 connect /etc/ppp/net-connect
 #default-asyncmap
 defaultroute

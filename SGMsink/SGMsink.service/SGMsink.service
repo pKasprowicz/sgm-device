@@ -5,6 +5,3 @@ Description= SGM Datasink Service
 Type          = simple
 ExecStart     = /home/root/sgm/SGMsink
 Restart       = always
-
-[Install]
-WantedBy = multi-user.target

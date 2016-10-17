@@ -14,6 +14,7 @@ set(COMPILER_SYSROOT ${EDISON_SDK}/sysroots/core2-32-poky-linux)
 
 set(SGM_DEPLOY_BIN_PATH /home/root/sgm)
 set(SGM_DEPLOY_SHARED_PATH /usr/lib)
+set(SGM_DEPLOY_ETC_PATH /etc)
 set(SGM_DEPLOY_SERVICES_PATH /etc/systemd/system)
 
 set(SGM_DEPLOY_OUTPUT_DIR ${CMAKE_BINARY_DIR}/out/poky)
@@ -24,6 +25,7 @@ set(SGM_DEPLOY_BINARY_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_BIN_PATH
 set(SGM_DEPLOY_SHARED_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_SHARED_PATH})
 
 set(SGM_DEPLOY_SERVICES_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_SERVICES_PATH})
+set(SGM_DEPLOY_ETCONFIG_OUTPUT_PATH ${SGM_DEPLOY_OUTPUT_DIR}/${SGM_DEPLOY_ETC_PATH})
 
 ###################
 # Project section #
@@ -51,7 +53,7 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 #shared common compilation options
 set (TARGET_ARCH "-m32 -march=i586")
-set (COMPILER_OPTIONS "-Wall -fmessage-length=0 -ffunction-sections -fdata-sections --sysroot=${COMPILER_SYSROOT}")
+set (COMPILER_OPTIONS "-Wall -fmessage-length=0 -ffunction-sections -fdata-sections --sysroot=${COMPILER_SYSROOT} -DSGM_SERVICE")
 
 #shared C compilation options
 set (C_LANGUAGE_DIALECT "-std=c99")
@@ -92,16 +94,31 @@ add_subdirectory(./SGMutils)
 add_subdirectory(./SGMsink)
 add_subdirectory(./SGMsensor)
 add_subdirectory(./SGMpowermgr)
-add_subdirectory(./SGM)
+
+file(COPY ${SINK_SERVICE_FILES} DESTINATION  ${SGM_DEPLOY_OUTPUT_DIR})
+
+add_custom_target(
+    build_done
+    ALL
+    COMMAND "echo" "Done"
+    DEPENDS SGMpowermgr mqttpp SGMutils SGMsink SGMsensor
+    WORKING_DIRECTORY ./
+    VERBATIM
+)
 
 add_custom_target(
     installer
     ALL
     COMMAND "makeself" "--nocrc" "--nomd5" ./out/poky ./out/install.sh SGMeteo echo "Done"
-    DEPENDS SGMpowermgr mqttpp SGMutils SGMsink SGMsensor
+    DEPENDS build_done
     WORKING_DIRECTORY ./
     VERBATIM
 )
+
+add_custom_command(TARGET build_done POST_BUILD
+                    COMMAND "cp" "-r" ${CMAKE_BINARY_DIR}/../SGM/etc/* ${SGM_DEPLOY_ETCONFIG_OUTPUT_PATH}
+                    COMMAND "echo" "Additional config files copied!"
+                    )
 
 add_custom_target(
     get_md5
