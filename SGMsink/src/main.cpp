@@ -3,6 +3,7 @@
 #include "INetworkProvider.h"
 #include "SgmSink.h"
 #include "MqttProtocol.h"
+#include "DeviceId.h"
 
 #include "Logger.h"
 #include "SharedMemory.h"
@@ -17,7 +18,7 @@
 void sig_handler(int sig);
 
 std::string sinkServerURI{"tcp://51.255.203.130:1883"};
-std::string sinkClientId{"SGM#1"};
+std::string sinkClientId{""};
 
 int main()
 {
@@ -28,6 +29,10 @@ int main()
   std::signal(SIGTERM, sig_handler);
   std::signal(SIGKILL, sig_handler);
   sd_journal_print(LOG_INFO, "SGMdatasink service started!");
+
+  DeviceId::getDeviceId(sinkClientId);
+
+  SGM_LOG_INFO("Acquired device id: ", sinkClientId.c_str());
 
   SharedMemory sharedMem;
   if (SharedMemory::Result::INIT_ERROR == sharedMem.init())
