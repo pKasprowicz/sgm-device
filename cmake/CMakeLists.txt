@@ -1,6 +1,6 @@
 set(BIN_NAME mqttpp)
 
-set(MQTTPP_BASE_DIR "../../org.eclipse.paho.mqtt.cpp")
+set(MQTTPP_BASE_DIR "../../paho.mqtt.cpp")
 
 set(MQTTPP_SRC "${MQTTPP_BASE_DIR}/src")
 set(MQTTPP_INC "${MQTTPP_SRC}")

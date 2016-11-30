@@ -69,7 +69,7 @@ set(CMAKE_C_FLAGS_RELEASE "-O2 ${COMPILER_OPTIONS} ${TARGET_ARCH} ${C_LANGUAGE_D
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g ${COMPILER_OPTIONS} ${TARGET_ARCH} ${CXX_LANGUAGE_DIALECT}")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g ${COMPILER_OPTIONS} ${TARGET_ARCH} ${C_LANGUAGE_DIALECT}")
 
-set(MQTT_HEADERS_PATH ../../org.eclipse.paho.mqtt.cpp/src/)
+set(MQTT_HEADERS_PATH ../../paho.mqtt.cpp/src/)
 
 message("-- Checking for MQTT CPP library sources: ${MQTT_HEADERS_PATH}")
 
@@ -78,7 +78,7 @@ if(NOT EXISTS ${MQTT_HEADERS_PATH})
     message("Attempting to fetch MQTT CPP sources...")
 
     execute_process(
-    COMMAND "git" "clone" "http://git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.cpp.git"
+    COMMAND "git" "clone" "https://github.com/eclipse/paho.mqtt.cpp.git"
     WORKING_DIRECTORY "../../"
     )
 else(NOT EXISTS ${MQTT_HEADERS_PATH})

@@ -13,7 +13,8 @@
 #include <map>
 
 MqttProtocol::MqttProtocol(const std::string& serverURI, const std::string& clientId)
-: itsMqttClient(serverURI,clientId)
+: itsMqttClient(serverURI,clientId),
+  mqttClientId(clientId)
 {
   // TODO Auto-generated constructor stub
 
@@ -99,7 +100,9 @@ bool MqttProtocol::connect()
 //TODO think of a better parser (objective)
 bool MqttProtocol::prepareTopic(sgm::SgmProcessData& data)
 {
-  itsTopicBuffer = "sgm/dev1/";
+  itsTopicBuffer = "sgm/";
+  itsTopicBuffer += mqttClientId;
+  itsTopicBuffer += "/";
 
   bool isMapperFound = false;
 

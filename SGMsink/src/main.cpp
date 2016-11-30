@@ -32,7 +32,7 @@ int main()
 
   DeviceId::getDeviceId(sinkClientId);
 
-  SGM_LOG_INFO("Acquired device id: ", sinkClientId.c_str());
+  SGM_LOG_INFO("Acquired device id: %s", sinkClientId.c_str());
 
   SharedMemory sharedMem;
   if (SharedMemory::Result::INIT_ERROR == sharedMem.init())
