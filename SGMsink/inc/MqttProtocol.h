@@ -46,7 +46,7 @@ private:
   bool isNetworkReady{false};
 
   std::string itsTopicBuffer;
-  const std::string mqttClientId;
+  const std::string & mqttClientId;
   uint8_t itsMesssageBuffer[100];
 };
 

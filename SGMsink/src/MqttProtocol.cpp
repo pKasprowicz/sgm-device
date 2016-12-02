@@ -14,6 +14,7 @@
 
 MqttProtocol::MqttProtocol(const std::string& serverURI, const std::string& clientId)
 : itsMqttClient(serverURI,clientId),
+  itsTopicBuffer{""},
   mqttClientId(clientId)
 {
   // TODO Auto-generated constructor stub
@@ -100,9 +101,7 @@ bool MqttProtocol::connect()
 //TODO think of a better parser (objective)
 bool MqttProtocol::prepareTopic(sgm::SgmProcessData& data)
 {
-  itsTopicBuffer = "sgm/";
-  itsTopicBuffer += mqttClientId;
-  itsTopicBuffer += "/";
+  itsTopicBuffer.assign("sgm/");
 
   bool isMapperFound = false;
 
@@ -117,7 +116,6 @@ bool MqttProtocol::prepareTopic(sgm::SgmProcessData& data)
       itsTopicBuffer += sgm::measPointStringMap.at(unitMapper.first);
       itsTopicBuffer += "/";
       itsTopicBuffer += sgm::physicalStringMap.at(unitMapper.second);
-//      itsTopicBuffer += "/";
       break;
     }
   }
