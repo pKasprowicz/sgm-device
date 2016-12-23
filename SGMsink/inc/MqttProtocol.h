@@ -9,9 +9,7 @@
 #define MQTTPROTOCOL_H_
 
 #include "IMessageProtocol.h"
-#include "MQTTClient.h"
-
-#include "mqtt/client.h"
+#include "MqttClient.h"
 
 #include <mutex>
 
@@ -25,7 +23,7 @@ public:
     DISCONNECTED
   };
 
-  MqttProtocol(const std::string& serverURI, const std::string& clientId);
+  MqttProtocol(std::string& serverURI, std::string& clientId);
   virtual ~MqttProtocol();
 
   virtual IMessageProtocol::Result sendMessage(sgm::SgmProcessData & dataToSend);
@@ -41,7 +39,7 @@ private:
   bool prepareTopic(sgm::SgmProcessData & data);
   int prepareMessage(sgm::SgmProcessData & data);
 
-  mqtt::client itsMqttClient;
+  MqttClient itsMqttClient;
   std::mutex itsEventMutex;
   bool isNetworkReady{false};
 

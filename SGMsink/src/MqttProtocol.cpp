@@ -10,10 +10,9 @@
 #include "Logger.h"
 
 #include <cstring>
-#include <map>
 
-MqttProtocol::MqttProtocol(const std::string& serverURI, const std::string& clientId)
-: itsMqttClient(serverURI,clientId),
+MqttProtocol::MqttProtocol(std::string& serverURI, std::string& clientId)
+: itsMqttClient(serverURI, clientId),
   itsTopicBuffer{""},
   mqttClientId(clientId)
 {
@@ -47,7 +46,7 @@ IMessageProtocol::Result MqttProtocol::sendMessage(sgm::SgmProcessData& dataToSe
 
   if (isNetworkReady)
   {
-    itsMqttClient.publish(itsTopicBuffer, itsMesssageBuffer, messageSize, 1, true);
+    itsMqttClient.publishMessage(itsTopicBuffer, itsMesssageBuffer, messageSize, 1, 1);
   }
   else
   {
@@ -62,7 +61,7 @@ IMessageProtocol::Result MqttProtocol::sendMessage(sgm::SgmProcessData& dataToSe
 bool MqttProtocol::disconnect()
 {
   itsMqttClient.disconnect();
-  return !itsMqttClient.is_connected();
+  return !itsMqttClient.isClientConnected();
 }
 
 void MqttProtocol::onNetworkStatusChange(INetworkProvider::NetworkStatus status)
@@ -85,17 +84,14 @@ void MqttProtocol::onNetworkStatusChange(INetworkProvider::NetworkStatus status)
 
 bool MqttProtocol::connect()
 {
-  try
+  auto result = itsMqttClient.connect();
+  if (MqttClient::Result::CONNECTION_ERROR == result)
   {
-  itsMqttClient.connect();
-  }
-  catch(mqtt::exception & ex)
-  {
-    SGM_LOG_ERROR("MQTT stack exception thrown");
     return false;
   }
+
   SGM_LOG_DEBUG("MqttProtocol::connect() : connected");
-  return itsMqttClient.is_connected();
+  return itsMqttClient.isClientConnected();
 }
 
 //TODO think of a better parser (objective)

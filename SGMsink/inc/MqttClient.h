@@ -36,6 +36,11 @@ public:
 
 	Result publishMessage(std::string & topic, uint8_t * message, uint16_t messageSize, uint8_t qos, bool retained);
 
+    bool isClientConnected()
+    {
+        return isConnected;
+    }
+
 private:
 	 MQTTClient itsClientHandle;
 	 MQTTClient_deliveryToken itsDeliveryToken;
