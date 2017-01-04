@@ -15,7 +15,7 @@ MqttClient::MqttClient(std::string & address, std::string & clientId)
 					MQTTCLIENT_PERSISTENCE_NONE,
 					NULL);
 
-	itsConnectionOptions.keepAliveInterval = 20;
+	itsConnectionOptions.keepAliveInterval = 40;
 	itsConnectionOptions.cleansession = 1;
 }
 
@@ -70,4 +70,9 @@ MqttClient::Result MqttClient::publishMessage(std::string &topic, uint8_t *messa
 	{
 		return Result::PUBLISH_SUCCESS;
 	}
+}
+
+void MqttClient::yield()
+{
+	MQTTClient_yield();
 }

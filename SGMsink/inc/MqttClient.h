@@ -25,6 +25,7 @@ public:
 		DISCONNECTED,
 		PUBLISH_SUCCESS,
 		PUBLISH_ERROR,
+		NOT_CONNECTED,
 		ERROR
 	};
 
@@ -34,11 +35,13 @@ public:
 	Result connect();
 	Result disconnect();
 
+	void yield();
+
 	Result publishMessage(std::string & topic, uint8_t * message, uint16_t messageSize, uint8_t qos, bool retained);
 
     bool isClientConnected()
     {
-        return isConnected;
+        return (0 != MQTTClient_isConnected(itsClientHandle));
     }
 
 private:

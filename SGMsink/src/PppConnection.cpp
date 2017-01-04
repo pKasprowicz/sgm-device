@@ -16,14 +16,19 @@ PppConnection::PppConnection(SharedMemory & sharedMemoryRef) :
                     {
                       powerMonitorThread();
                     }),
-  itsSharedMemory(sharedMemoryRef)
+  itsSharedMemory(sharedMemoryRef),
+  isPowerMonitorOn(false),
+  terminate(false)
 {
   callbackList.reserve(InitialCallbacksCount);
 }
 
 PppConnection::~PppConnection()
 {
-  // TODO Auto-generated destructor stub
+  std::unique_lock<std::mutex> monitorLock(itsMonitoringMutex);
+  terminate = true;
+  monitorLock.unlock();
+  monitoringThread.join();
 }
 
 void PppConnection::registerUserCallback(NetworkStatusCallback netCallback)
@@ -203,17 +208,23 @@ void PppConnection::pausePowerMonitor()
 
 void PppConnection::powerMonitorThread()
 {
-  std::unique_lock<std::mutex> monitorLock(itsMonitoringMutex);
+  SGM_LOG_DEBUG("PppConnection Power Monitor thread started");
   SharedMemory::SharedData sData = itsSharedMemory.getDataInstance();
 
   HistoricalValue<bool> cmuxReadyFlag(sData.getCmuxReady());
 
   while(1)
   {
+    std::unique_lock<std::mutex> monitorLock(itsMonitoringMutex);
     itsMonitoringCondVar.wait_for(monitorLock, std::chrono::seconds(1), [this]()
                                                                          {
-                                                                           return isPowerMonitorOn;
+                                                                           return (isPowerMonitorOn || terminate);
                                                                          });
+
+    if(terminate)
+    {
+      break;
+    }
 
     cmuxReadyFlag.set(sData.getCmuxReady());
 

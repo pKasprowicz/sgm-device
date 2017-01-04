@@ -32,6 +32,8 @@ public:
 
   virtual bool disconnect();
 
+  virtual void yield();
+
   virtual void onNetworkStatusChange(INetworkProvider::NetworkStatus status);
 
 private:

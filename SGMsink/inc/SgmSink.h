@@ -16,6 +16,7 @@
 #include "IMessageProtocol.h"
 #include "INetworkProvider.h"
 #include "SGMDataType.h"
+#include "SinkSocket.h"
 
 #include <string>
 
@@ -49,11 +50,11 @@ class SgmSink
 
     private:
 
-      void processMessageQueue() throw ();
+      void processMessageQueue();
 
       static const uint32_t ReconnectTimeout;
 
-      static const uint32_t MaxListenIterationsCount{10U};
+      static const uint32_t MaxListenIterationsCount{5U};
 
       uint32_t listenIterationsCount;
 
@@ -62,7 +63,9 @@ class SgmSink
       IMessageProtocol & itsSinkProtocol;
 
       INetworkProvider & itsPppConnection;
+
       sgm::SgmProcessData itsSgmDataPacket;
+      SinkSocket<sgm::SgmProcessData> itsSinkSocket;
 
   };
 

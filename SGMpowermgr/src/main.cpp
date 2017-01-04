@@ -21,28 +21,28 @@ extern"C"
 
 //TODO turn off digital interface when process is killed
 
-class ModemQueryMock : public IModemQuery
+class CMuxMock : public ICMuxDriver
 {
-public:
-  virtual Result run()
-  {
-    return Result::OK_RAW;
-  }
-
-  virtual ~ModemQueryMock()
-  {
-
-  }
+    virtual ICMuxDriver::Result turnOn()
+    {
+      return ICMuxDriver::Result::MUX_ON;
+    }
+    virtual Result turnOff()
+    {
+      return ICMuxDriver::Result::MUX_OFF;
+    }
 };
 
 int main() {
 
   mraa_init();
 
-  BGS2CMux cMuxDriver;
+  #warning CMUX fallback is currently used
+  CMuxMock cMuxDriver;
+  //BGS2CMux cMuxDriver;
 
   mraa::Uart uart1(0);
-  uart1.setBaudRate(57600);
+  uart1.setBaudRate(115200);
   uart1.setMode(8, mraa::UART_PARITY_NONE, 1);
   uart1.setFlowcontrol(false, true);
   uart1.setTimeout(10, 10, 10);

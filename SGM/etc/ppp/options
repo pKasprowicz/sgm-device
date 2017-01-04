@@ -1,6 +1,6 @@
 name internet
 debug
-/dev/ttyGSM1
+/dev/ttyMFD1
 115200
 usepeerdns
 modem

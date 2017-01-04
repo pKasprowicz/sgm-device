@@ -19,6 +19,7 @@ public:
   enum class Result
   {
     MESSAGE_SENT,
+    NO_CONNECTION,
     ERROR_PROTOCOL,
     ERROR_SOCKET,
     INPUT_DATA_INVALID,
@@ -35,6 +36,8 @@ public:
   virtual bool connect() = 0;
 
   virtual bool disconnect() = 0;
+
+  virtual void yield() = 0;
 
   virtual void onNetworkStatusChange(INetworkProvider::NetworkStatus status) = 0;
 

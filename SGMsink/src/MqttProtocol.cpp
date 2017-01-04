@@ -44,14 +44,21 @@ IMessageProtocol::Result MqttProtocol::sendMessage(sgm::SgmProcessData& dataToSe
 
   std::unique_lock<std::mutex> lock(itsEventMutex);
 
-  if (isNetworkReady)
+  if (!itsMqttClient.isClientConnected())
   {
-    itsMqttClient.publishMessage(itsTopicBuffer, itsMesssageBuffer, messageSize, 1, 1);
+    retVal = IMessageProtocol::Result::NO_CONNECTION;
   }
   else
   {
-    SGM_LOG_WARN("Network unavailable at the moment");
-    retVal = IMessageProtocol::Result::ERROR_PROTOCOL;
+    if (isNetworkReady)
+    {
+      itsMqttClient.publishMessage(itsTopicBuffer, itsMesssageBuffer, messageSize, 1, 1);
+    }
+    else
+    {
+      SGM_LOG_WARN("Network unavailable at the moment");
+      retVal = IMessageProtocol::Result::ERROR_PROTOCOL;
+    }
   }
   lock.unlock();
 
@@ -141,4 +148,9 @@ int MqttProtocol::prepareMessage(sgm::SgmProcessData& data)
   pos += sizeof(data.timestamp);
 
   return pos;
+}
+
+void MqttProtocol::yield()
+{
+  itsMqttClient.yield();
 }

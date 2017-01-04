@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <systemd/sd-daemon.h>
 #include "unistd.h"
+#include <fcntl.h>
 
 #include <stdexcept>
 #include <cstring>
@@ -21,13 +22,43 @@
 template<typename PacketClass> class SinkSocket
 {
 public:
-  SinkSocket() throw (std::runtime_error);
+  SinkSocket()
+  {
+
+  }
   virtual ~SinkSocket();
+
+  virtual bool isConnected()
+  {
+    return (acceptedSocketDescriptor > -1);
+  }
+
+  virtual int connect();
+  virtual void disconnect();
 
   virtual int receive(PacketClass * rxPacket) throw();
   virtual int send() throw();
 
 private:
+
+  int setFdBlocking(int fd, int blocking) {
+    /* Save the current flags */
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1)
+    {
+      return 0;
+    }
+
+    if (blocking)
+    {
+      flags &= ~O_NONBLOCK;
+    }
+    else
+    {
+      flags |= O_NONBLOCK;
+    }
+    return fcntl(fd, F_SETFL, flags) != -1;
+  }
 
   void translateByteStreamToStructure(PacketClass * packet);
 
@@ -42,7 +73,7 @@ private:
 
 template<typename PacketClass> SinkSocket<PacketClass>::~SinkSocket()
 {
-  SGM_LOG_DEBUG("Closing socket %d", acceptedSocketDescriptor);
+  SGM_LOG_DEBUG("SinkSocket : Closing socket %d", acceptedSocketDescriptor);
   close(acceptedSocketDescriptor);
 }
 
@@ -56,12 +87,26 @@ int SinkSocket<PacketClass>::receive(PacketClass * rxPacket) throw ()
          throw std::runtime_error("Error during socket accept() call");
   }
 
-  int rxSize = 0U;
-  rxSize = recv(acceptedSocketDescriptor, rxBuffer, sizeof(rxBuffer), 0U);
+  int rxSize = 0;
+  rxSize = recv(acceptedSocketDescriptor, rxBuffer, sizeof(rxBuffer), 0);
 
   if (rxSize < 0)
   {
-    SGM_LOG_ERROR("Unable to receive packet : error %d", errno);
+    if ((EAGAIN == errno) || (EWOULDBLOCK == errno))
+    {
+      SGM_LOG_ERROR("No data available on socket");
+      return errno;
+    }
+    else
+    {
+      SGM_LOG_ERROR("Unable to receive packet : error %d", errno);
+      return 0;
+    }
+  }
+
+  if (0 == rxSize)
+  {
+    return 0;
   }
 
   translateByteStreamToStructure(rxPacket);
@@ -72,7 +117,7 @@ int SinkSocket<PacketClass>::receive(PacketClass * rxPacket) throw ()
 }
 
 template<typename PacketClass>
-SinkSocket<PacketClass>::SinkSocket() throw (std::runtime_error)
+int SinkSocket<PacketClass>::connect()
 {
   int socketsCount = 0;
   while ((socketsCount = sd_listen_fds(0)) == 0)
@@ -95,17 +140,35 @@ SinkSocket<PacketClass>::SinkSocket() throw (std::runtime_error)
   }
 
   itsSocketAddressLength = sizeof(itsSocketAddress);
+
+  setFdBlocking(socketDescriptor, false);
+
   acceptedSocketDescriptor = accept(socketDescriptor, reinterpret_cast<struct sockaddr *>(&itsSocketAddress), &itsSocketAddressLength);
   if (acceptedSocketDescriptor < 0)
   {
-    SGM_LOG_DEBUG("SinkSocket<PacketClass>::SinkSocket() : Unable to accept connection : error %d", errno);
-    throw std::runtime_error("Connection could not be accepted");
+    if ((EAGAIN == errno) || (EWOULDBLOCK == errno))
+    {
+      SGM_LOG_INFO("No awaiting connections");
+      return errno;
+    }
+    else
+    {
+      SGM_LOG_DEBUG("SinkSocket<PacketClass>::SinkSocket() : Unable to accept connection : error %d", errno);
+      throw std::runtime_error("Connection could not be accepted");
+    }
   }
   else
   {
     SGM_LOG_INFO("Socket connection established; id = %d", acceptedSocketDescriptor);
   }
 
+}
+
+template<typename PacketClass>
+void SinkSocket<PacketClass>::disconnect()
+{
+  close(acceptedSocketDescriptor);
+  acceptedSocketDescriptor = -1;
 }
 
 template<typename PacketClass>

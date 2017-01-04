@@ -17,6 +17,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+#include <atomic>
 
 class PppConnection :public INetworkProvider
 {
@@ -76,7 +77,8 @@ private:
 
   SharedMemory & itsSharedMemory;
 
-  bool isPowerMonitorOn = false;
+  std::atomic<bool> isPowerMonitorOn;
+  std::atomic<bool> terminate;
 
   bool isDeviceAvailable();
   State stateMachineTick(Event ev);

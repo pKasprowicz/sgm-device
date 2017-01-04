@@ -22,6 +22,7 @@ SgmSink::SgmSink(IMessageProtocol & sinkProtoRef, INetworkProvider & pppConnRef)
   itsSinkProtocol(sinkProtoRef),
   itsPppConnection(pppConnRef)
 {
+  SGM_LOG_DEBUG("SgmSink constructor called");
   itsPppConnection.registerUserCallback(std::bind(&IMessageProtocol::onNetworkStatusChange, &itsSinkProtocol, std::placeholders::_1));
 }
 
@@ -76,18 +77,17 @@ void SgmSink::tick()
     }
 
     case SinkState::LISTENING_CONNECTED:
-      SGM_LOG_INFO("Connected to MQTT server. Processing started...");
+      SGM_LOG_INFO("Listening for incoming packets, attempt %d / %d", listenIterationsCount+1, MaxListenIterationsCount);
       try
       {
         processMessageQueue();
-        std::this_thread::sleep_for(std::chrono::seconds(5U));
+        std::this_thread::sleep_for(std::chrono::seconds(10U));
         ++listenIterationsCount;
       }
       catch (SendingException & ex)
       {
         (void)itsSinkProtocol.disconnect();
-        (void)itsPppConnection.disconnect();
-        SGM_LOG_FATAL("Fatal error when processing messages (socket). Waiting %d seconds for resuming...", ReconnectTimeout);
+        SGM_LOG_FATAL("Fatal error when processing messages. Waiting %d seconds for resuming...", ReconnectTimeout);
         std::this_thread::sleep_for(std::chrono::seconds(ReconnectTimeout));
 
         listenIterationsCount = 0U;
@@ -113,25 +113,46 @@ void SgmSink::tick()
 
 void SgmSink::operator ()()
 {
+  SGM_LOG_INFO("SgmSink main thread started");
+  itsSinkSocket.connect();
   while(listenIterationsCount < MaxListenIterationsCount)
   {
     tick();
   }
+
   SGM_LOG_INFO("Idle time exceeded, exiting...");
+  itsSinkProtocol.disconnect();
+  SGM_LOG_INFO("Protocol disconnected..");
+  itsPppConnection.disconnect();
+  SGM_LOG_INFO("PPP connection finished...");
+  std::this_thread::sleep_for(std::chrono::seconds(5));
 }
 
-void SgmSink::processMessageQueue()  throw ()
+void SgmSink::processMessageQueue()
 {
-  size_t rxSize = 0U;
-  auto sendingResult = IMessageProtocol::Result::ERROR_PROTOCOL;
+  int rxSize = 0;
 
-  SinkSocket<sgm::SgmProcessData> sinkSocket;
+  SGM_LOG_DEBUG("SgmSink::processMessageQueue()");
+
+  int rc = itsSinkSocket.connect();
+  if ((EWOULDBLOCK == rc) || (EAGAIN == rc))
+  {
+    SGM_LOG_INFO("Not processing any messages");
+    return;
+  }
+  else
+  {
+    listenIterationsCount = 0U;
+  }
+
   while (true)
   {
-    rxSize = sinkSocket.receive(& itsSgmDataPacket);
-    if (0U == rxSize)
+    rxSize = itsSinkSocket.receive(& itsSgmDataPacket);
+    if ((EAGAIN == rxSize) || (EWOULDBLOCK == rxSize) || (0 == rxSize))
     {
-      break;
+      itsSinkSocket.disconnect();
+      itsSinkProtocol.yield();
+      return;
     }
     if (sizeof(sgm::SgmProcessData) > rxSize )
     {
@@ -140,7 +161,7 @@ void SgmSink::processMessageQueue()  throw ()
 
     //TODO validation
 
-    sendingResult = itsSinkProtocol.sendMessage(itsSgmDataPacket);
+    auto sendingResult = itsSinkProtocol.sendMessage(itsSgmDataPacket);
 
     switch(sendingResult)
     {
@@ -161,21 +182,18 @@ void SgmSink::processMessageQueue()  throw ()
       SGM_LOG_ERROR("Error when sending - internal socket error");
       throw SendingException();
 
-      break;
+    case IMessageProtocol::Result::NO_CONNECTION:
+      SGM_LOG_ERROR("The client is not connected");
+      throw SendingException();
 
     case IMessageProtocol::Result::ERROR_PROTOCOL:
-
       SGM_LOG_ERROR("Error on sending message - protocol fault");
       throw std::runtime_error("Error on sending message - protocol fault");
-
-      break;
 
     case IMessageProtocol::Result::ERROR_UNKNOWN:
 
       SGM_LOG_FATAL("Unknown error when sending message");
       throw SendingException();
-
-      break;
 
     default:
 
