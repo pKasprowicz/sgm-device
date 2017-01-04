@@ -156,6 +156,7 @@ PppConnection::State PppConnection::stateMachineTick(Event ev)
       pausePowerMonitor();
       itsCurrentState = State::NO_CONNECTION;
       notifyByCallback(INetworkProvider::NetworkStatus::DISCONNECTED);
+      itsPppEndpoint.close();
     }
     break;
 

@@ -38,6 +38,12 @@ class SgmSink
         LISTENING_DISCONNECTED
       };
 
+      enum class ProcessingState
+      {
+        SENDING_ERROR,
+
+      };
+
       struct SendingException : public std::exception
       {
 

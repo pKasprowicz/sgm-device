@@ -43,7 +43,7 @@ MqttClient::Result MqttClient::connect()
 
 MqttClient::Result MqttClient::disconnect()
 {
-	MQTTClient_disconnect(itsClientHandle, 10000);
+	MQTTClient_disconnect(itsClientHandle, 2000);
 	isConnected = false;
 
 	return Result::DISCONNECTED;

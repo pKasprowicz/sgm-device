@@ -114,7 +114,6 @@ void SgmSink::tick()
 void SgmSink::operator ()()
 {
   SGM_LOG_INFO("SgmSink main thread started");
-  itsSinkSocket.connect();
   while(listenIterationsCount < MaxListenIterationsCount)
   {
     tick();
@@ -166,40 +165,20 @@ void SgmSink::processMessageQueue()
     switch(sendingResult)
     {
     case IMessageProtocol::Result::MESSAGE_SENT:
-
       SGM_LOG_INFO("Message sent!");
-
       break;
 
     case IMessageProtocol::Result::INPUT_DATA_INVALID:
-
       SGM_LOG_ERROR("Data invalid - packet dropped");
-
       break;
-
-    case IMessageProtocol::Result::ERROR_SOCKET:
-
-      SGM_LOG_ERROR("Error when sending - internal socket error");
-      throw SendingException();
 
     case IMessageProtocol::Result::NO_CONNECTION:
       SGM_LOG_ERROR("The client is not connected");
       throw SendingException();
 
-    case IMessageProtocol::Result::ERROR_PROTOCOL:
-      SGM_LOG_ERROR("Error on sending message - protocol fault");
-      throw std::runtime_error("Error on sending message - protocol fault");
-
-    case IMessageProtocol::Result::ERROR_UNKNOWN:
-
-      SGM_LOG_FATAL("Unknown error when sending message");
-      throw SendingException();
 
     default:
-
-      SGM_LOG_FATAL("Unhandled return code");
-      throw SendingException();
-
+      SGM_LOG_FATAL("Unhandled return code - ignoring");
       break;
     }
   }
