@@ -12,9 +12,10 @@ void DeviceId::getDeviceId(std::string & devId)
 {
     int bytesRead = 0;
     int fd = -1;
+    char idBuffer[SerialNumberSize];
     if ((fd = open(SerialNumberFilePath, O_RDONLY)) != -1)
     {
-        bytesRead = read(fd, const_cast<char *>(devId.c_str()), SerialNumberSize);
+        bytesRead = read(fd, const_cast<char *>(idBuffer), SerialNumberSize);
         close(fd);
     }
 
@@ -22,6 +23,10 @@ void DeviceId::getDeviceId(std::string & devId)
     {
         devId.assign(DefaultSerialNumber);
         SGM_LOG_WARN("Could not acquire device serial number!");
+    }
+    else
+    {
+        devId.assign(idBuffer, SerialNumberSize);
     }
 
 }

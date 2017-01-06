@@ -105,7 +105,8 @@ bool MqttProtocol::connect()
 bool MqttProtocol::prepareTopic(sgm::SgmProcessData& data)
 {
   itsTopicBuffer.assign("sgm/");
-
+  itsTopicBuffer.append(mqttClientId);
+  itsTopicBuffer.append("/");
   bool isMapperFound = false;
 
   SGM_LOG_DEBUG("MqttProtocol::prepareTopic : %d / %d", data.physQuantityType, data.measPoint);
