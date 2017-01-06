@@ -1,8 +1,0 @@
-[Unit]
-Description= SGM Service
-
-[Service]
-Type          = simple
-ExecStart     = /home/root/sgm/sgm_datasink
-RuntimeMaxSec = 300
-Restart       = always

@@ -1,0 +1,10 @@
+[Unit]
+Description=SGM Sensor service timer
+
+[Timer]
+Unit = SGMsensor.service
+OnBootSec       = 5min
+OnUnitActiveSec = 30min
+
+[Install]
+WantedBy=multi-user.target

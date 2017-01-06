@@ -1,0 +1,10 @@
+[Unit]
+Description=SGM Service's socket
+
+[Socket]
+ListenSequentialPacket = /home/root/sgm/sgm.sckt
+Accept       = false
+SocketMode   = 0666
+
+[Install]
+WantedBy=sockets.target

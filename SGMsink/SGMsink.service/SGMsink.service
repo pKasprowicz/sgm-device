@@ -1,0 +1,7 @@
+[Unit]
+Description= SGM Datasink Service
+
+[Service]
+Type          = simple
+ExecStart     = /home/root/sgm/SGMsink
+Restart       = no

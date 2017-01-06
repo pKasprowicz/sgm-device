@@ -1,0 +1,6 @@
+[Unit]
+Description = SGM Sensor service
+
+[Service]
+Type          = simple
+ExecStart     = /home/root/sgm/SGMsensor
