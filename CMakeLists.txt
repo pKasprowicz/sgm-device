@@ -69,27 +69,10 @@ set(CMAKE_C_FLAGS_RELEASE "-O2 ${COMPILER_OPTIONS} ${TARGET_ARCH} ${C_LANGUAGE_D
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g ${COMPILER_OPTIONS} ${TARGET_ARCH} ${CXX_LANGUAGE_DIALECT}")
 set(CMAKE_C_FLAGS_DEBUG "-O0 -g ${COMPILER_OPTIONS} ${TARGET_ARCH} ${C_LANGUAGE_DIALECT}")
 
-set(MQTT_HEADERS_PATH ../../paho.mqtt.cpp/src/)
-
-message("-- Checking for MQTT CPP library sources: ${MQTT_HEADERS_PATH}")
-
-if(NOT EXISTS ${MQTT_HEADERS_PATH})
-    message("--  MQTT CPP library sources not found in ${MQTT_HEADERS_PATH}")
-    message("Attempting to fetch MQTT CPP sources...")
-
-    execute_process(
-    COMMAND "git" "clone" "https://github.com/eclipse/paho.mqtt.cpp.git"
-    WORKING_DIRECTORY "../../"
-    )
-else(NOT EXISTS ${MQTT_HEADERS_PATH})
-    message("-- Checking for MQTT CPP library sources: ${MQTT_HEADERS_PATH} -- OK")
-endif(NOT EXISTS ${MQTT_HEADERS_PATH})
-
 include_directories(${COMPILER_SYSROOT}/usr/include)
 include_directories(${COMPILER_SYSROOT}/usr/include/c++)
 include_directories(${COMPILER_SYSROOT}/usr/include/c++/i586-poky-linux)
 
-add_subdirectory(./cmake)
 add_subdirectory(./SGMutils)
 add_subdirectory(./SGMsink)
 add_subdirectory(./SGMsensor)
@@ -101,7 +84,7 @@ add_custom_target(
     build_done
     ALL
     COMMAND "echo" "Done"
-    DEPENDS SGMpowermgr mqttpp SGMutils SGMsink SGMsensor
+    DEPENDS SGMpowermgr SGMutils SGMsink SGMsensor
     WORKING_DIRECTORY ./
     VERBATIM
 )
